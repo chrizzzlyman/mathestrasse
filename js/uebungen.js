@@ -34,12 +34,20 @@
     const feldL = el('span', { class: 'zahlfeld' }, links);
     const mitte = el('span', { class: 'zeichenfeld' }, '?');
     const feldR = el('span', { class: 'zahlfeld' }, rechts);
+    const balken = el('div', { class: 'balken', 'aria-hidden': 'true' });
     const knoten = el('div', { class: 'waage' },
+      el('div', { class: 'stuetze', 'aria-hidden': 'true' }), balken,
       teller('links', wareL), teller('rechts', wareR),
       el('div', { class: 'kasten' }, feldL, mitte, feldR));
     return {
       knoten, wareL, wareR, mitte, feldR,
-      neige: (zeichen) => knoten.setAttribute('data-neigung', zeichen),
+      neige: (zeichen) => {
+        knoten.setAttribute('data-neigung', zeichen);
+        // Die Teller stehen bei -24px und +20px; der Balken verbindet sie
+        const grad = Math.atan2(44, (knoten.offsetWidth || 600) / 2) * (180 / Math.PI);
+        const richtung = zeichen === '<' ? 1 : zeichen === '>' ? -1 : 0;
+        balken.style.transform = `translateY(${richtung ? -2 : 0}px) rotate(${richtung * grad}deg)`;
+      },
     };
   }
 
@@ -248,7 +256,7 @@
     const sortiert = a.zahlen.slice().sort((x, y) => x - y);
     let i = 0;
     const leine = el('div', { class: 'leine', 'aria-live': 'polite' });
-    const farben = ['#e8321f', '#ffc83d', '#3fa34d', '#2379d1', '#9b59b6'];
+    const farben = ['#ef4a3f', '#ffc531', '#43b649', '#2f8ae6', '#a163d6'];
     const himmel = el('div', { class: 'ballonhimmel' }, a.zahlen.map((n, j) => {
       const k = el('button', {
         type: 'button', class: 'ballon', style: `--farbe:${farben[j % 5]};--versatz:${(j * 37) % 50}px;--takt:${j * -0.7}s`,
@@ -366,7 +374,7 @@
     pruefe.disabled = true;
     const spiel = legespiel({ werte: a.ziffern, felder, beimAendern: (voll) => { pruefe.disabled = !voll; } });
     const tafel = el('div', { class: 'stellentafel' }, felder.map((f, i) => el('div', { class: 'spalte' },
-      el('span', { class: 'kopf ' + 'hze'[i] }, 'HZE'[i]), f)));
+      el('span', { class: 'stellenname ' + 'hze'[i] }, 'HZE'[i]), f)));
     feld.append(spiel.vorrat, tafel, pruefe);
   };
 
@@ -472,6 +480,12 @@
     feld.append(el('div', { class: 'aussagen' }, liste.map((y) => y.k)), pruefe);
   };
 
+  // Das kleine Bild eines Zimmers: Zehnersystem-Teil ('H', 'Z', 'E') oder Datei aus assets/bilder
+  MH.raumBild = (raum) => el('span', {
+    class: 'zimmerbild', 'aria-hidden': 'true',
+    html: ['H', 'Z', 'E'].includes(raum.bild) ? Z.einzelteil(raum.bild) : `<img src="assets/bilder/${raum.bild || 'star'}.svg" alt="">`,
+  });
+
   /* ---------- Auftrag je Aufgabe ---------- */
   MH.auftragVon = (aufgabe, raum) => {
     if (aufgabe.art === 'merksatz') return 'Wie heißt der Merksatz?';
@@ -496,6 +510,13 @@
   MH.raumSpielen = (wurzel, { raum, aufgaben, abschluss }) => {
     let i = 0, fehler = 0;
     const beginn = Date.now();
+    const sitzung = MH.speicher && MH.speicher.sitzung;
+    const tier = sitzung && !sitzung.gast ? sitzung.tier : null;
+    const LOB = ['Richtig!', 'Super!', 'Stark!', 'Genau!', 'Klasse!'];
+    const sprechblase = (kopfzeile, text, weiter) => [
+      MH.tierBild(tier),
+      el('div', { class: 'blase' }, el('div', {}, el('b', { class: 'lob' }, kopfzeile), el('p', {}, text)), weiter),
+    ];
     const ziegel = el('div', { class: 'ziegel', role: 'img' }, aufgaben.map(() => el('i')));
     const buehne = el('div', { class: 'buehne' });
     wurzel.append(ziegel, buehne);
@@ -511,11 +532,12 @@
       const meldung = el('div', { class: 'meldung', role: 'status' });
       buehne.replaceChildren(
         el('div', { class: 'auftrag' },
+          MH.tierBild(tier),
           el('h2', {}, auftrag),
           MH.kannVorlesen && el('button', {
             type: 'button', class: 'knopf klein vorlesen', onclick: () => MH.sprich(vorlesetext(aufgabe, auftrag)),
             'aria-label': 'Vorlesen',
-          }, '🔊', el('span', { class: 'wortlaut' }, ' Vorlesen'))),
+          }, el('span', { style: 'display:contents', html: MH.symbol('vorlesen') }), el('span', { class: 'wortlaut' }, 'Vorlesen'))),
         feld, meldung);
 
       const api = {
@@ -536,7 +558,7 @@
             },
           }, i + 1 < aufgaben.length ? 'Weiter' : 'Zimmer abschließen');
           meldung.className = 'meldung gut';
-          meldung.replaceChildren(el('p', {}, satz), weiter);
+          meldung.replaceChildren(...sprechblase(LOB[i % LOB.length], satz, weiter));
           weiter.focus({ preventScroll: true });
           meldung.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         },
@@ -545,7 +567,7 @@
           fehler++;
           MH.ton('falsch');
           meldung.className = 'meldung nochmal';
-          meldung.replaceChildren(el('p', {}, hinweis));
+          meldung.replaceChildren(...sprechblase('Noch nicht ganz.', hinweis));
           meldung.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
           return versuche;
         },

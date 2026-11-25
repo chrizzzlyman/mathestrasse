@@ -34,7 +34,7 @@
         name: 'Erdgeschoss', stufe: 'leicht',
         raeume: [
           {
-            id: 'waage', titel: 'Die Waage', auftrag: 'Vergleiche auf der Waage!',
+            id: 'waage', bild: 'balance-scale', titel: 'Die Waage', auftrag: 'Vergleiche auf der Waage!',
             aufgaben: (erst) => {
               const paare = erst ? [[214, 214], [214, 321], [214, 112]] : [];
               const max = { h: 4, z: 5, e: 6 };
@@ -43,7 +43,7 @@
             },
           },
           {
-            id: 'waage-legen', titel: 'Lege nach', auftrag: 'Lege rechts so viel, dass die Waage gerade steht!',
+            id: 'waage-legen', bild: 'brick', titel: 'Lege nach', auftrag: 'Lege rechts so viel, dass die Waage gerade steht!',
             aufgaben: (erst) => {
               const zahl = () => L.zahl(L.ganz(1, 4), L.ganz(0, 5), L.ganz(1, 6));
               const ziele = erst ? [214, 321, 112, zahl()] : wiederhole(4, zahl);
@@ -51,7 +51,7 @@
             },
           },
           {
-            id: 'mengen', titel: 'Wo ist mehr?', auftrag: 'Wo ist mehr? Vergleiche die Mengen!',
+            id: 'mengen', bild: 'abacus', titel: 'Wo ist mehr?', auftrag: 'Wo ist mehr? Vergleiche die Mengen!',
             aufgaben: (erst) => {
               const max = { h: 5, z: 6, e: 8 };
               const paare = erst
@@ -61,7 +61,7 @@
             },
           },
           {
-            id: 'gleich-viel', titel: 'Gleich viel?', auftrag: 'Male alle Rechnungen an, die gleich viel sind wie die Zahl!',
+            id: 'gleich-viel', bild: 'heavy-equals-sign', titel: 'Gleich viel?', auftrag: 'Male alle Rechnungen an, die gleich viel sind wie die Zahl!',
             aufgaben: (erst) => {
               if (!erst) {
                 return wiederhole(6, () => L.gleichVielEinfach(L.zahl(L.ganz(1, 9), L.ganz(1, 9), L.ganz(1, 9))));
@@ -81,7 +81,7 @@
             },
           },
           {
-            id: 'ballons', titel: 'Ballons', auftrag: 'Lass die Ballons platzen: von der kleinsten zur größten Zahl!',
+            id: 'ballons', bild: 'balloon', titel: 'Ballons', auftrag: 'Lass die Ballons platzen: von der kleinsten zur größten Zahl!',
             aufgaben: () => wiederhole(4, (i) => ({ art: 'ballons', zahlen: L.ballonZahlen(i < 2 ? 4 : 5) })),
           },
         ],
@@ -90,7 +90,7 @@
         name: '1. Stock', stufe: 'mittel',
         raeume: [
           {
-            id: 'hunderter', titel: 'Erst die Hunderter', auftrag: 'Vergleiche zuerst die Hunderter!',
+            id: 'hunderter', bild: 'H', titel: 'Erst die Hunderter', auftrag: 'Vergleiche zuerst die Hunderter!',
             aufgaben: (erst) => {
               const paare = erst
                 ? [[367, 542], [283, 851], [953, 793], [772, 694], [689, 589]]
@@ -99,7 +99,7 @@
             },
           },
           {
-            id: 'zehner', titel: 'Dann die Zehner', auftrag: 'Gleiche Hunderter? Dann schau auf die Zehner!',
+            id: 'zehner', bild: 'Z', titel: 'Dann die Zehner', auftrag: 'Gleiche Hunderter? Dann schau auf die Zehner!',
             aufgaben: (erst) => {
               const paare = erst
                 ? [[367, 342], [283, 251], [953, 993], [772, 794], [679, 689]]
@@ -109,7 +109,7 @@
             },
           },
           {
-            id: 'einer', titel: 'Zuletzt die Einer', auftrag: 'Gleiche Hunderter und Zehner? Dann schau auf die Einer!',
+            id: 'einer', bild: 'E', titel: 'Zuletzt die Einer', auftrag: 'Gleiche Hunderter und Zehner? Dann schau auf die Einer!',
             aufgaben: (erst) => {
               const paare = erst
                 ? [[367, 362], [283, 281], [953, 954], [772, 774], [679, 679]]
@@ -119,7 +119,7 @@
             },
           },
           {
-            id: 'entschieden', titel: 'Was entscheidet?', auftrag: 'Vergleiche und kreuze an, was entschieden hat!',
+            id: 'entschieden', bild: 'magnifying-glass-tilted-left', titel: 'Was entscheidet?', auftrag: 'Vergleiche und kreuze an, was entschieden hat!',
             aufgaben: (erst) => {
               const paare = erst
                 ? [[742, 755], [573, 528], [817, 814], [315, 312], [496, 596]]
@@ -128,7 +128,7 @@
             },
           },
           {
-            id: 'zeichen', titel: 'Setz das Zeichen', auftrag: 'Vergleiche!',
+            id: 'zeichen', bild: 'crocodile', titel: 'Setz das Zeichen', auftrag: 'Vergleiche!',
             aufgaben: (erst) => {
               const paare = erst
                 ? [[252, 258], [170, 174], [119, 786], [714, 442], [352, 318], [362, 177],
@@ -138,7 +138,7 @@
             },
           },
           {
-            id: 'ordnen', titel: 'Der Größe nach', auftrag: 'Ordne die Zahlen!',
+            id: 'ordnen', bild: 'ladder', titel: 'Der Größe nach', auftrag: 'Ordne die Zahlen!',
             aufgaben: (erst) => {
               const reihen = erst
                 ? [[241, 352, 748, 371, 916], [523, 181, 794, 162, 967], [745, 547, 574, 754, 475], [517, 715, 175, 571, 157]]
@@ -152,23 +152,23 @@
         name: 'Dachgeschoss', stufe: 'schwer',
         raeume: [
           {
-            id: 'verdreht', titel: 'Verdreht', auftrag: 'Achtung, durcheinander! Was ist gleich viel wie die Zahl?',
+            id: 'verdreht', bild: 'cyclone', titel: 'Verdreht', auftrag: 'Achtung, durcheinander! Was ist gleich viel wie die Zahl?',
             aufgaben: () => wiederhole(5, () => L.gleichVielKnifflig()),
           },
           {
-            id: 'ziffern', titel: 'Ziffernkarten', auftrag: 'Baue die gesuchte Zahl aus den drei Karten!',
+            id: 'ziffern', bild: 'input-numbers', titel: 'Ziffernkarten', auftrag: 'Baue die gesuchte Zahl aus den drei Karten!',
             aufgaben: () => ['groesste', 'kleinste', 'groesste', 'kleinste', 'zwischen'].map((z) => L.ziffernAufgabe(z)),
           },
           {
-            id: 'luecke', titel: 'Lücken-Zahl', auftrag: 'Welche Ziffern passen in die Lücke? Finde alle!',
+            id: 'luecke', bild: 'puzzle-piece', titel: 'Lücken-Zahl', auftrag: 'Welche Ziffern passen in die Lücke? Finde alle!',
             aufgaben: () => wiederhole(5, () => L.lueckeAufgabe()),
           },
           {
-            id: 'fehler', titel: 'Fehler finden', auftrag: 'Hier hat sich jemand vertan. Tippe alle falschen Vergleiche an!',
+            id: 'fehler', bild: 'smiling-face-with-horns', titel: 'Fehler finden', auftrag: 'Hier hat sich jemand vertan. Tippe alle falschen Vergleiche an!',
             aufgaben: () => wiederhole(3, () => L.fehlerAufgabe()),
           },
           {
-            id: 'detektiv', titel: 'Zahlen-Detektiv', auftrag: 'Lies alle Hinweise. Welche Zahl ist gesucht?',
+            id: 'detektiv', bild: 'detective', titel: 'Zahlen-Detektiv', auftrag: 'Lies alle Hinweise. Welche Zahl ist gesucht?',
             aufgaben: () => wiederhole(5, () => L.raetselAufgabe()),
           },
         ],

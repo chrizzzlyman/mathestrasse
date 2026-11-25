@@ -1,43 +1,58 @@
-body.lk { background: #eef3f6; font-size: 1rem; }
+/* Lehrkraft-Ansicht: dieselbe Farbwelt wie die Straße, aber ruhig und übersichtlich. */
+body.lk { background: #eef3fd; font-size: 1rem; }
 body.lk #app { display: block; }
-.lk-inhalt { padding: 1rem; max-width: 1200px; margin: 0 auto; }
-.lk-karte { background: var(--papier); border: 2px solid var(--tinte); border-radius: 14px; padding: 1rem; margin-bottom: 1rem; }
-.lk-karte.schmal { max-width: 420px; margin: 3rem auto; display: flex; flex-direction: column; gap: .6rem; }
-.lk input, .lk select { font: inherit; padding: .5rem .6rem; border: 2px solid var(--tinte); border-radius: 8px; min-width: 0; }
+.lk-inhalt { padding: 1.2rem 1rem 3rem; max-width: 1200px; margin: 0 auto; }
+.lk-titel { display: flex; align-items: center; gap: .8rem; font-family: var(--anzeige); font-size: 1.1rem; }
+.lk-titel .strassenschild { font-size: 1.1rem; }
+.lk-karte { background: var(--papier); border-radius: 22px; box-shadow: var(--schatten); padding: 1.2rem; margin-bottom: 1.2rem; }
+.lk-karte.schmal { max-width: 430px; margin: 4rem auto; padding: 1.6rem; display: flex; flex-direction: column; gap: .65rem; }
+.lk-karte.schmal h1 { margin: .4rem 0 0; font-size: 1.6rem; }
+.lk-karte ul { margin: .5rem 0; padding-left: 1.2rem; }
+.lk input, .lk select { font: inherit; padding: .55rem .75rem; border: 2px solid var(--kante); border-radius: 12px; background: var(--papier); min-width: 0; }
 .lk input[type='number'] { width: 6rem; }
-.lk pre { white-space: pre-wrap; word-break: break-all; background: #eef3f6; padding: .8rem; border-radius: 8px; user-select: all; }
-.leiste { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; margin-bottom: .8rem; }
+.lk pre { white-space: pre-wrap; word-break: break-all; background: var(--flaeche); padding: .8rem; border-radius: 12px; user-select: all; }
+.leiste { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem; margin-bottom: .9rem; }
 .klein { font-size: .9rem; }
+.lk a { color: var(--schild); }
 
-.tabellenrahmen { overflow-x: auto; background: var(--papier); border: 2px solid var(--tinte); border-radius: 10px; }
-.lk table { border-collapse: collapse; width: 100%; }
-.lk th, .lk td { border: 1px solid #c5cdd5; padding: .3rem .35rem; text-align: center; white-space: nowrap; }
-.lk th.raum { height: 140px; vertical-align: bottom; }
+.tabellenrahmen { overflow-x: auto; background: var(--papier); border-radius: 18px; box-shadow: var(--schatten); }
+.lk table { border-collapse: separate; border-spacing: 0; width: 100%; }
+.lk th, .lk td { border-right: 1px solid var(--linie); border-bottom: 1px solid var(--linie); padding: .4rem; text-align: center; white-space: nowrap; }
+.lk th.raum { height: 142px; vertical-align: bottom; }
 .lk th.raum span { writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 400; }
-.lk .etagenspalte { background: #fff0ee; }
+.lk .etagenspalte { background: #ffe9e6; font-family: var(--anzeige); }
 .lk .kindspalte { position: sticky; left: 0; background: var(--papier); text-align: left; z-index: 1; }
-.lk th small { display: block; font-weight: 400; }
+.lk th .wer { display: flex; align-items: center; gap: .6rem; }
+.lk th small { display: block; font-weight: 400; color: var(--leise); }
 .lk td small { display: block; font-size: .75rem; }
-.lk td.leer { color: #8d96a0; }
-.lk td.s1 { background: #fde0c8; }
-.lk td.s2 { background: #fff0b3; }
-.lk td.s3 { background: #cdeec3; }
-.lk tr.summe > * { font-weight: 700; background: #eef3f6; }
+.lk td .sterne { gap: 0; }
+.lk td .stern { width: 15px; height: 15px; }
+.lk td.leer { color: #9aa5c0; }
+.lk td.s1 { background: #ffe6d3; }
+.lk td.s2 { background: #fff4c2; }
+.lk td.s3 { background: #daf3d3; }
+.lk tr.summe > * { font-weight: 700; background: var(--flaeche); }
+.tierbild.mini { --g: 34px; box-shadow: none; }
 
-.kinderliste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
-.kinderliste li { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
-.kinderliste .wer { flex: 0 0 11rem; }
+.kinderliste { list-style: none; margin: 0; padding: 0 !important; display: flex; flex-direction: column; gap: .7rem; }
+.kinderliste li { display: flex; flex-wrap: wrap; gap: .7rem; align-items: center; }
+.kinderliste .wer { flex: 0 0 12rem; }
 .kinderliste input { flex: 1 1 10rem; }
 
-.qr-karten { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: .8rem; }
-.qr-karte { display: flex; align-items: center; gap: .8rem; background: #fff; border: 2px dashed #1f2d3d; border-radius: 10px; padding: .7rem; break-inside: avoid; }
+.qr-karten { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: .9rem; }
+.qr-karte { display: flex; align-items: center; gap: .8rem; background: #fff; border: 2px dashed #7d89a8; border-radius: 18px; padding: .8rem; break-inside: avoid; }
 .qr { width: 140px; flex: 0 0 140px; }
 .qr svg { width: 100%; height: auto; }
-.qr-tier { font-size: 2.6rem; line-height: 1.2; }
-.qr-name { font-size: 1.25rem; font-weight: 700; }
+.qr-wer { flex: 1; display: flex; flex-direction: column; align-items: center; gap: .6rem; text-align: center; }
+.qr-wer .strassenschild { font-size: .95rem; }
+.tierbild.qr-tier { --g: 66px; box-shadow: none; }
+.qr-name { font-family: var(--anzeige); font-size: 1.3rem; font-weight: 800; line-height: 1.15; }
 
 @media print {
-  body.lk { background: #fff; }
+  html, body.lk { background: #fff; }
+  /* Plaketten und Schild sollen auch ohne „Hintergrundgrafiken drucken“ farbig bleiben */
+  .qr-karte * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .qr-wer .strassenschild { box-shadow: 0 0 0 3px var(--schild); }
   .nicht-drucken { display: none !important; }
   .lk-inhalt { padding: 0; max-width: none; }
   .qr-karten { grid-template-columns: 1fr 1fr; gap: 4mm; }

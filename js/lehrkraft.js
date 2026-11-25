@@ -19,7 +19,9 @@
   const knopf = (text, tun, klasse = '') => el('button', { type: 'button', class: 'knopf klein ' + klasse, onclick: tun }, text);
   const setze = (...inhalt) => wurzel.replaceChildren(...inhalt.filter(Boolean));
   const notizen = () => MH.hole('mh.notizen', {});
-  const bild = (k) => MH.tiere[k.tier] || '🙂';
+  const bild = (k, klasse = 'mini') => MH.tierBild(k.tier, klasse);
+  const sterne = (n) => el('span', { class: 'sterne', role: 'img', 'aria-label': `${n} von 3 Sternen`, html: MH.zeichne.sterne(n) });
+  const schild = () => el('span', { class: 'strassenschild' }, 'Mathestraße');
   const kennung = (k) => `${k.tier} ${k.zahl}`;
   const fehlertext = (e) => (e && e.message) || 'Unbekannter Fehler';
 
@@ -28,7 +30,8 @@
     const mail = el('input', { type: 'email', required: true, autocomplete: 'username', id: 'mail' });
     const passwort = el('input', { type: 'password', required: true, autocomplete: 'current-password', id: 'passwort' });
     const form = el('form', { class: 'lk-karte schmal' },
-      el('h1', {}, 'Mathestraße für Lehrkräfte'),
+      el('div', {}, schild()),
+      el('h1', {}, 'Für Lehrkräfte'),
       el('label', { for: 'mail' }, 'E-Mail'), mail,
       el('label', { for: 'passwort' }, 'Passwort'), passwort,
       el('button', { type: 'submit', class: 'knopf haupt' }, 'Anmelden'),
@@ -139,11 +142,12 @@
           class: 's' + w.sterne,
           title: `${r.titel}: ${w.sterne} Sterne, ${w.mal}× geschafft, zuletzt ${w.fehler} Fehler` +
             (w.einschaetzung ? `, Kind findet es ${w.einschaetzung}` : ''),
-        }, '★'.repeat(w.sterne), urteil && el('small', {}, urteil));
+        }, sterne(w.sterne), urteil && el('small', {}, urteil));
       });
       const letzte = zuletzt.get(kind.id);
       return el('tr', {},
-        el('th', { class: 'kindspalte' }, `${bild(kind)} ${kennung(kind)}`, namen[kind.id] && el('small', {}, namen[kind.id])),
+        el('th', { class: 'kindspalte' }, el('span', { class: 'wer' }, bild(kind),
+          el('span', {}, kennung(kind), namen[kind.id] && el('small', {}, namen[kind.id])))),
         zellen,
         el('td', {}, `${fertig}/${raeume.length}`),
         el('td', {}, letzte ? new Date(letzte).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '–'));
@@ -175,7 +179,7 @@
         el('p', { class: 'klein' }, 'Kinder mit nur 1 Stern oder der Einschätzung „schwer“.')) : null,
       el('div', { class: 'tabellenrahmen' },
         el('table', {}, el('thead', {}, kopf1, kopf2), el('tbody', {}, zeilen, summe))),
-      el('p', { class: 'klein' }, '★ = bestes Ergebnis. L, M, S = so hat das Kind das Zimmer empfunden (leicht, mittel, schwer).'));
+      el('p', { class: 'klein' }, 'Sterne = bestes Ergebnis. L, M, S = so hat das Kind das Zimmer empfunden (leicht, mittel, schwer).'));
   }
 
   /* ---------- Kinder und QR-Karten ---------- */
@@ -214,7 +218,7 @@
         MH.merke('mh.notizen', n);
       });
       return el('li', {},
-        el('span', { class: 'wer' }, `${bild(kind)} ${kennung(kind)}`),
+        el('span', { class: 'wer' }, bild(kind), kennung(kind)),
         notiz,
         knopf('Neuer QR-Code', async () => {
           if (!confirm(`Neuen QR-Code für ${kennung(kind)} erzeugen? Die alte Karte gilt dann nicht mehr.`)) return;
@@ -235,9 +239,9 @@
     const online = seitenUrl().startsWith('https:');
     const karten = el('div', { class: 'qr-karten' }, kinder.map((kind) => el('div', { class: 'qr-karte' },
       el('div', { class: 'qr', html: qrSvg(`${seitenUrl()}#k=${kind.token}`) }),
-      el('div', {},
-        el('b', {}, 'Mathestraße'),
-        el('div', { class: 'qr-tier' }, bild(kind)),
+      el('div', { class: 'qr-wer' },
+        schild(),
+        bild(kind, 'qr-tier'),
         el('div', { class: 'qr-name' }, kennung(kind))))));
 
     return el('div', {},
@@ -259,7 +263,7 @@
     }, text);
     setze(
       el('header', { class: 'kopf nicht-drucken' },
-        el('b', {}, 'Mathestraße für Lehrkräfte'),
+        el('div', { class: 'lk-titel' }, schild(), el('b', {}, 'für Lehrkräfte')),
         el('div', { class: 'kopf-rechts' },
           tab('fortschritt', 'Fortschritt'),
           tab('kinder', 'Kinder und QR-Karten'),

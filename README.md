@@ -39,6 +39,8 @@ Der Schlüssel in `js/config.js` darf öffentlich sein. Den *secret*- oder *serv
 3. In `haeuser/liste.js` eine Zeile ergänzen: `'haus11.js',`
 
 Das Haus erscheint dann auf der Straße und in der Lehrkraft-Ansicht. Die Datenbank bleibt unverändert.
+Jedes Zimmer kann mit `bild` ein kleines Bild bekommen: der Name einer Datei aus `assets/bilder`
+(ohne `.svg`) oder `'H'`, `'Z'`, `'E'` für Platte, Stange und Würfel. Ohne Angabe erscheint ein Stern.
 Zimmer-Kennungen (`id`) nur aus Kleinbuchstaben, Ziffern und `-`, und später nicht mehr umbenennen,
 sonst geht der Fortschritt dieses Zimmers verloren.
 
@@ -71,4 +73,5 @@ Rechenprüfung: `node tests/aufgaben.test.js`
 - Eine QR-Karte ist wie ein Schlüssel. Bei Verlust: „Neuer QR-Code“.
 - Kostenlose Supabase-Projekte werden bei wenig Nutzung über 7 Tage pausiert (Ferien!).
   Im Dashboard „Resume project“ wählen; das geht bis 90 Tage nach der Pause.
-- Schrift und Programmbibliotheken liegen im Ordner selbst (Lizenzen in `vendor/lizenzen`).
+- Schriften, Tierbilder, Symbole und Programmbibliotheken liegen im Ordner selbst (Lizenzen in `vendor/lizenzen`).
+  Die Tiere sind eigene Bilddateien (`assets/tiere`), damit sie auf jedem Gerät gleich aussehen.

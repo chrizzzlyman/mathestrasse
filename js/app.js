@@ -11,6 +11,8 @@
   let kameraStopp = null;
 
   const knopf = (text, tun, klasse = '') => el('button', { type: 'button', class: 'knopf ' + klasse, onclick: tun }, text);
+  const symbol = (name) => el('span', { class: 'zeichnung', style: 'display:contents', html: MH.symbol(name) });
+  const symbolKnopf = (name, text, tun, klasse = '') => knopf([symbol(name), el('span', {}, text)], tun, klasse);
   const gehe = (hash) => { if (location.hash === hash) zeigeRoute(); else location.hash = hash; };
 
   function setze(...inhalt) {
@@ -33,44 +35,47 @@
   /* ---------- Kopfzeile ---------- */
   function kopf() {
     const sitzung = S.sitzung;
-    const ton = el('button', { type: 'button', class: 'knopf klein' });
-    const tonText = () => {
-      ton.textContent = MH.stumm() ? '🔇' : '🔔';
+    const ton = el('button', { type: 'button', class: 'knopf klein rund' });
+    const tonBild = () => {
+      ton.innerHTML = MH.symbol(MH.stumm() ? 'glockeAus' : 'glocke');
       ton.setAttribute('aria-label', MH.stumm() ? 'Töne einschalten' : 'Töne ausschalten');
     };
-    ton.addEventListener('click', () => { MH.merke('mh.stumm', !MH.stumm()); tonText(); });
-    tonText();
-    const wer = sitzung.ansehen ? '👀 Nur ansehen'
-      : sitzung.gast ? '🙂 Ausprobieren'
-        : `${MH.tiere[sitzung.tier] || '🙂'} ${sitzung.tier} ${sitzung.zahl}`;
+    ton.addEventListener('click', () => { MH.merke('mh.stumm', !MH.stumm()); tonBild(); });
+    tonBild();
+    const name = sitzung.ansehen ? 'Nur ansehen' : sitzung.gast ? 'Ausprobieren' : `${sitzung.tier} ${sitzung.zahl}`;
     return el('header', { class: 'kopf' },
-      knopf('Mathestraße', () => gehe('#/strasse'), 'logo'),
+      el('button', { type: 'button', class: 'logo', onclick: () => gehe('#/strasse') },
+        el('span', { class: 'strassenschild' }, 'Mathestraße')),
       el('div', { class: 'kopf-rechts' },
-        el('span', { class: 'wer' }, wer),
+        el('span', { class: 'wer' }, MH.tierBild(sitzung.gast ? null : sitzung.tier), name),
         ton,
-        knopf(sitzung.gast ? 'Anmelden' : 'Abmelden', () => {
+        symbolKnopf('raus', sitzung.gast ? 'Anmelden' : 'Abmelden', () => {
           S.abmelden();
           history.replaceState(null, '', location.pathname);
           anmeldung();
-        }, 'klein')));
+        }, 'klein abmelden')));
   }
 
   /* ---------- Anmeldung ---------- */
-  function anmeldeRahmen(...inhalt) {
+  function anmeldeRahmen(optionen, ...inhalt) {
     const erstes = MH.haeuser[0];
-    setze(el('main', { class: 'anmeldung', style: farben(erstes) },
-      el('div', { class: 'anmelde-haus', html: Z.haus({ nummer: erstes.nummer, farbe: erstes.farbe, stufe: Z.TEILE }) }),
-      el('div', { class: 'anmelde-karte' }, ...inhalt)));
+    setze(el('main', { class: 'anmeldung' + (optionen.haus ? '' : ' mittig'), style: farben(erstes) },
+      el('div', { html: Z.himmel(), style: 'display:contents' }),
+      el('div', { class: 'landschaft', html: Z.huegel() }),
+      el('div', { class: 'anmelde-szene' + (optionen.haus ? '' : ' ohne-haus') },
+        optionen.haus && el('div', { class: 'anmelde-haus', html: Z.haus({ nummer: erstes.nummer, farbe: erstes.farbe, stufe: Z.TEILE }) }),
+        el('div', { class: 'anmelde-karte' }, ...inhalt))));
   }
+  const MIT_HAUS = { haus: true }, OHNE_HAUS = { haus: false };
 
   function anmeldung(meldung) {
     S.sitzung = null;
-    anmeldeRahmen(
-      el('h1', {}, 'Mathestraße'),
-      el('p', {}, 'Wer baut heute?'),
+    anmeldeRahmen(MIT_HAUS,
+      el('h1', {}, el('span', { class: 'strassenschild' }, 'Mathestraße')),
+      el('p', { class: 'unterzeile' }, 'Wer baut heute?'),
       meldung && el('p', { class: 'meldung nochmal', role: 'alert' }, meldung),
-      knopf('📷 QR-Code scannen', scannen, 'haupt gross'),
-      knopf('🐾 Mit Tier und Zahl', tierWaehlen, 'gross'),
+      symbolKnopf('kamera', 'QR-Code scannen', scannen, 'haupt gross'),
+      symbolKnopf('pfote', 'Mit Tier und Zahl', tierWaehlen, 'gross'),
       knopf('Ohne Anmeldung ausprobieren', () => { S.alsGast(); gehe('#/strasse'); }, 'leise'),
       el('a', { class: 'lehrkraft-link', href: 'lehrkraft.html' }, 'Für Lehrkräfte'));
   }
@@ -82,7 +87,7 @@
   };
 
   async function mitToken(token) {
-    anmeldeRahmen(el('p', { role: 'status' }, 'Ich schließe dein Haus auf …'));
+    anmeldeRahmen(MIT_HAUS, el('p', { role: 'status' }, 'Ich schließe dein Haus auf …'));
     const antwort = await S.anmeldenMitToken(token);
     history.replaceState(null, '', location.pathname + '#/strasse');
     if (antwort.ok) zeigeRoute();
@@ -93,11 +98,11 @@
   }
 
   function tierWaehlen() {
-    anmeldeRahmen(
+    anmeldeRahmen(OHNE_HAUS,
       el('h2', {}, 'Welches Tier bist du?'),
-      el('div', { class: 'tierwahl' }, Object.entries(MH.tiere).map(([name, bild]) =>
+      el('div', { class: 'tierwahl' }, Object.keys(MH.tiere).map((name) =>
         el('button', { type: 'button', class: 'knopf tier', onclick: () => zahlEingeben(name) },
-          el('span', { class: 'bild' }, bild), el('span', {}, name)))),
+          MH.tierBild(name), el('span', {}, name)))),
       knopf('Zurück', () => anmeldung(), 'leise'));
   }
 
@@ -123,13 +128,17 @@
       hinweis.textContent = GRUENDE[antwort.grund] || GRUENDE.unbekannt;
     };
     zeige();
-    anmeldeRahmen(
-      el('h2', {}, `${MH.tiere[tier]} ${tier} – und deine Zahl?`),
+    const zurueck = el('button', {
+      type: 'button', class: 'knopf ziffer', 'aria-label': 'Ziffer löschen', html: MH.symbol('loeschen'),
+      onclick: () => { if (!beschaeftigt) { zahl = zahl.slice(0, -1); zeige(); } },
+    });
+    anmeldeRahmen(OHNE_HAUS,
+      el('div', { class: 'mit-tier' }, MH.tierBild(tier), el('h2', {}, `${tier}, wie ist deine Zahl?`)),
       anzeige,
       hinweis,
       el('div', { class: 'ziffernblock' },
         [1, 2, 3, 4, 5, 6, 7, 8, 9].map((d) => knopf(String(d), () => tippe(String(d)), 'ziffer')),
-        knopf('⌫', () => { if (!beschaeftigt) { zahl = zahl.slice(0, -1); zeige(); } }, 'ziffer'),
+        zurueck,
         knopf('0', () => tippe('0'), 'ziffer')),
       knopf('Zurück', tierWaehlen, 'leise'));
   }
@@ -148,7 +157,7 @@
       if (strom) strom.getTracks().forEach((t) => t.stop());
       strom = null;
     };
-    anmeldeRahmen(video, status,
+    anmeldeRahmen(OHNE_HAUS, el('div', { class: 'sucher' }, video), status,
       knopf('Kamera wechseln', () => { richtung = richtung === 'environment' ? 'user' : 'environment'; starte(); }),
       knopf('Zurück', () => anmeldung(), 'leise'));
     kameraStopp = () => { aktiv = false; halt(); kameraStopp = null; };
@@ -191,9 +200,9 @@
   }
 
   function weiterAls(gemerkt) {
-    anmeldeRahmen(
+    anmeldeRahmen(MIT_HAUS,
       el('h2', {}, 'Bist du das?'),
-      el('div', { class: 'grosses-tier' }, MH.tiere[gemerkt.tier] || '🙂'),
+      el('div', { class: 'grosses-tier' }, MH.tierBild(gemerkt.tier)),
       el('p', { class: 'grosser-name' }, `${gemerkt.tier} ${gemerkt.zahl}`),
       knopf('Ja, das bin ich', () => mitToken(gemerkt.token), 'haupt gross'),
       knopf('Nein', () => { S.abmelden(); anmeldung(); }, 'gross'));
@@ -201,26 +210,39 @@
 
   /* ---------- Straße ---------- */
   function strasse() {
+    const sitzung = S.sitzung;
+    // Beim ersten noch nicht fertigen Haus steht das Tier des Kindes
+    const baustelle = MH.haeuser.find((h) => anzahlFertig(h) < raeume(h).length) || MH.haeuser[MH.haeuser.length - 1];
     const reihe = el('div', { class: 'haeuserreihe' },
       MH.haeuser.map((haus) => {
         const n = anzahlFertig(haus), von = raeume(haus).length;
         return el('button', {
           type: 'button', class: 'grundstueck', style: farben(haus), onclick: () => gehe(`#/haus/${haus.nummer}`),
         },
-          el('span', { class: 'bild', html: Z.haus({ nummer: haus.nummer, farbe: haus.farbe, stufe: stufe(haus) }) }),
+          el('span', { class: 'bild' },
+            el('span', { style: 'display:contents', html: Z.haus({ nummer: haus.nummer, farbe: haus.farbe, stufe: stufe(haus) }) }),
+            haus === baustelle && MH.tierBild(sitzung.gast ? null : sitzung.tier, 'maskottchen')),
           el('span', { class: 'namensschild' },
             el('b', {}, haus.titel),
-            el('span', {}, n === von ? '🏆 Haus fertig!' : `${n} von ${von} Zimmern gebaut`)));
+            el('span', { class: 'baubalken', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.round((n / von) * 100)}%` })),
+            n === von
+              ? el('span', { class: 'stand' }, el('img', { src: 'assets/bilder/trophy.svg', alt: '' }), 'Haus fertig!')
+              : el('span', { class: 'stand' }, `${n} von ${von} Zimmern gebaut`)));
       }),
       [1, 2].map(() => el('div', { class: 'grundstueck leer' }, el('span', { class: 'bild', html: Z.bauplatz() }))));
-    const gruss = S.sitzung.gast ? 'Hallo!' : `Hallo, ${S.sitzung.tier}!`;
+    const gruss = sitzung.gast ? 'Hallo!' : `Hallo, ${sitzung.tier}!`;
     setze(kopf(), el('main', { class: 'strasse' },
+      el('div', { html: Z.himmel(), style: 'display:contents' }),
       el('div', { class: 'gruss' },
-        el('h1', {}, gruss),
-        el('p', {}, 'Tippe auf ein Haus und baue weiter.'),
-        S.sitzung.gast && !S.sitzung.ansehen && el('p', { class: 'merkzettel' },
-          'Du probierst nur aus: Der Fortschritt bleibt allein auf diesem Gerät.')),
-      el('div', { class: 'gegend' }, reihe, el('div', { class: 'gehweg' }), el('div', { class: 'fahrbahn' }))));
+        !sitzung.gast && MH.tierBild(sitzung.tier),
+        el('div', {},
+          el('h1', {}, gruss),
+          el('p', {}, 'Tippe auf ein Haus und baue weiter.'),
+          sitzung.gast && !sitzung.ansehen && el('p', { class: 'merkzettel' },
+            'Du probierst nur aus: Der Fortschritt bleibt allein auf diesem Gerät.'))),
+      el('div', { class: 'gegend' },
+        el('div', { class: 'huegel', html: Z.huegel() }),
+        reihe, el('div', { class: 'gehweg' }), el('div', { class: 'fahrbahn' }))));
   }
 
   /* ---------- Im Haus ---------- */
@@ -233,14 +255,17 @@
           type: 'button', class: 'zimmer' + (sterne ? ' fertig' : ''), disabled: !offen,
           onclick: () => gehe(`#/zimmer/${haus.nummer}/${raum.id}`),
         },
+          !offen && el('span', { class: 'schlosszeichen', html: MH.symbol('schloss') }),
+          MH.raumBild(raum),
           el('span', { class: 'zimmername' }, raum.titel),
           el('span', { class: 'sterne', role: 'img', 'aria-label': `${sterne} von 3 Sternen`, html: Z.sterne(sterne) }));
       });
       return el('section', { class: 'etage' + (offen ? '' : ' zu') },
         el('div', { class: 'etagenkopf' },
-          el('span', { class: 'hantel', html: Z.hantel(etage.stufe) }),
-          el('h2', {}, `${etage.name}: ${etage.stufe}`),
-          !offen && el('p', {}, `🔒 Baue zuerst ${i === 1 ? 'das Erdgeschoss' : 'den 1. Stock'} fertig.`)),
+          el('div', { class: 'etagenschild' },
+            el('span', { class: 'hantel', html: Z.hantel(etage.stufe) }),
+            el('h2', {}, `${etage.name}: ${etage.stufe}`)),
+          !offen && el('p', {}, `Baue zuerst ${i === 1 ? 'das Erdgeschoss' : 'den 1. Stock'} fertig.`)),
         el('div', { class: 'zimmerreihe' }, zimmer));
     });
 
@@ -248,13 +273,14 @@
       const kann = k.raeume.every((id) => S.sterne(haus.nummer, id) > 0);
       return el('li', { class: kann ? 'kann' : '' },
         el('span', {}, k.text),
-        el('span', { class: 'haken', role: 'img', 'aria-label': kann ? 'geschafft' : 'noch offen' }, kann ? '✔' : ''));
+        el('span', { class: 'haken', role: 'img', 'aria-label': kann ? 'geschafft' : 'noch offen', html: kann ? MH.symbol('haken') : '' }));
     }));
 
     setze(kopf(), el('main', { class: 'hausansicht', style: farben(haus) },
       el('div', { class: 'hausspalte' },
-        knopf('← Zur Straße', () => gehe('#/strasse'), 'klein'),
-        el('h1', {}, haus.untertitel),
+        el('div', { class: 'hauskopf' },
+          symbolKnopf('zurueck', 'Zur Straße', () => gehe('#/strasse'), 'klein'),
+          el('h1', {}, haus.untertitel)),
         el('div', { class: 'schnitt' },
           el('div', { class: 'dach' }, el('span', { class: 'hausschild' }, haus.nummer)),
           el('div', { class: 'mauern' }, etagen.slice().reverse()),
@@ -278,7 +304,8 @@
     const spielfeld = el('div', { class: 'spielfeld' });
     setze(kopf(), el('main', { class: 'uebung', style: farben(haus) },
       el('div', { class: 'uebungskopf' },
-        knopf('← Ins Haus', () => gehe(`#/haus/${haus.nummer}`), 'klein'),
+        symbolKnopf('zurueck', 'Ins Haus', () => gehe(`#/haus/${haus.nummer}`), 'klein'),
+        MH.raumBild(raum),
         el('h1', {}, raum.titel)),
       spielfeld));
     MH.raumSpielen(spielfeld, {
@@ -317,7 +344,8 @@
       if (S.sitzung.gast) return;
       stand.textContent = 'Wird gespeichert …';
       versprechen.then((ok) => {
-        stand.textContent = ok ? 'Gespeichert ✔' : 'Auf diesem Gerät gemerkt. Wird gesendet, sobald das Netz wieder da ist.';
+        if (ok) stand.replaceChildren(symbol('haken'), 'Gespeichert');
+        else stand.textContent = 'Auf diesem Gerät gemerkt. Wird gesendet, sobald das Netz wieder da ist.';
       });
     };
     zeigeStand(speicherung.gesendet);
@@ -339,7 +367,9 @@
       el('div', { class: 'ergebnis-karte' },
         el('h1', {}, 'Zimmer geschafft!'),
         el('div', { class: 'sterne gross', role: 'img', 'aria-label': `${sterne} von 3 Sternen`, html: Z.sterne(sterne) }),
-        el('div', { class: 'wachstum', html: Z.haus({ nummer: haus.nummer, farbe: haus.farbe, stufe: jetzt, neu }) }),
+        el('div', { class: 'schaubild' },
+          el('div', { class: 'wachstum', html: Z.haus({ nummer: haus.nummer, farbe: haus.farbe, stufe: jetzt, neu }) }),
+          MH.tierBild(S.sitzung.gast ? null : S.sitzung.tier)),
         el('p', { class: 'botschaft' }, botschaft),
         el('h2', {}, 'So war es für mich:'),
         wahl,
