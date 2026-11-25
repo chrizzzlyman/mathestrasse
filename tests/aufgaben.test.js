@@ -7,6 +7,7 @@ const wurzel = path.join(__dirname, '..');
 
 require(path.join(wurzel, 'js/logik.js'));
 require(path.join(wurzel, 'haeuser/liste.js'));
+require(path.join(wurzel, 'js/abzeichen.js'));
 const MH = globalThis.MH;
 MH.HAUS_DATEIEN.forEach((d) => require(path.join(wurzel, 'haeuser', d)));
 const L = MH.logik;
@@ -83,6 +84,81 @@ const pruefe = {
     const falsch = a.aussagen.filter((x) => !x.stimmt).length;
     assert(falsch >= 2 && falsch <= 3);
   },
+
+  /* Haus 9 */
+  anzahlen(a) { dreistellig(a.zahl); },
+  legen(a) { dreistellig(a.zahl); },
+  schreibzahl(a) { dreistellig(a.zahl); assert.strictEqual(typeof a.wirr, 'boolean'); },
+  frage(a) {
+    assert(a.antworten.includes(a.richtig));
+    assert.strictEqual(new Set(a.antworten).size, a.antworten.length);
+  },
+  aufraeumen(a) {
+    dreistellig(a.zahl);
+    const { h, z, e } = L.stellen(a.zahl);
+    assert(h + z + e <= 30, 'passt nicht ins Streufeld');
+  },
+  blitz(a) { dreistellig(a.zahl); assert(a.sekunden >= 2); },
+  verbinde(a) {
+    assert(a.zahlen.length >= 3);
+    a.zahlen.forEach(dreistellig);
+    assert.strictEqual(new Set(a.zahlen).size, a.zahlen.length, 'doppelte Zahl beim Verbinden');
+  },
+  stempeln(a) { dreistellig(a.zahl); },
+  baukasten(a) {
+    dreistellig(a.zahl);
+    // jedes Wort, das gebraucht wird, liegt in der passenden Gruppe der Wortbank
+    L.zahlwortTeile(a.zahl).forEach((t) => {
+      if (t.art !== 'und') assert((a.bank[t.art] || []).includes(t.text), `Baukasten ${a.zahl}: „${t.text}“ fehlt`);
+    });
+    assert(L.zahlwortTeile(a.zahl).some((t) => t.art === 'und'), 'Baukasten braucht „und“: ' + a.zahl);
+    ['H', 'E', 'Z'].forEach((k) => assert.strictEqual(new Set(a.bank[k]).size, a.bank[k].length));
+  },
+  reihenfolge(a) { assert(['schreibe', 'spreche'].includes(a.wie)); },
+  ziffernfolge(a) {
+    const { h, z, e } = L.stellen(a.zahl);
+    assert(['schreibe', 'spreche'].includes(a.wie));
+    assert.strictEqual(new Set([h, z, e]).size, 3, 'gleiche Ziffern: ' + a.zahl);
+    assert(z >= 2 && e >= 1, 'Sprechfolge wäre unklar: ' + a.zahl);
+  },
+  dreher(a) {
+    assert.strictEqual(a.optionen.length, 4);
+    assert.strictEqual(new Set(a.optionen).size, 4);
+    assert(a.optionen.includes(a.zahl));
+    a.optionen.forEach(dreistellig);
+    assert.strictEqual(new Set(a.optionen.map(L.zahlwort)).size, 4);
+  },
+  diktat(a) { dreistellig(a.zahl); },
+  buendeln(a) {
+    dreistellig(a.zahl);
+    assert.strictEqual(a.h * 100 + a.z * 10 + a.e, a.zahl);
+    assert(a.z >= 10 || a.e >= 10, 'nichts zu bündeln');
+    assert(a.z <= 18 && a.e <= 18);
+  },
+  schieben(a) {
+    // alle Möglichkeiten unabhängig nachrechnen
+    const start = [a.h, a.z, a.e];
+    const ergebnisse = [];
+    for (let von = 0; von < 3; von++) {
+      for (let nach = 0; nach < 3; nach++) {
+        if (von === nach || !start[von] || start[nach] === 9) continue;
+        const neu = start.slice();
+        neu[von]--; neu[nach]++;
+        const n = neu[0] * 100 + neu[1] * 10 + neu[2];
+        if (n >= 100) ergebnisse.push(n);
+      }
+    }
+    assert(ergebnisse.includes(a.soll), 'Ziel nicht mit einem Plättchen erreichbar');
+    if (a.ziel === 'groesste') assert.strictEqual(a.soll, Math.max(...ergebnisse));
+    if (a.ziel === 'kleinste') assert.strictEqual(a.soll, Math.min(...ergebnisse));
+  },
+  stellenraetsel(a) {
+    dreistellig(a.zahl);
+    const passend = [];
+    for (let x = 100; x <= 999; x++) if (a.hinweise.every((h) => h.passt(x))) passend.push(x);
+    assert.deepStrictEqual(passend, [a.zahl], 'Stellen-Rätsel ist nicht eindeutig');
+  },
+  wortSchreiben(a) { dreistellig(a.zahl); assert.strictEqual(L.wortHinweis(a.zahl, L.zahlwort(a.zahl)), null); },
 };
 
 // Grundregeln
@@ -129,7 +205,7 @@ for (const haus of MH.haeuser) {
   }
 
   // Passen die „Dann die …“-Zimmer zur jeweiligen Stelle?
-  const erwartet = { hunderter: 'H', zehner: 'Z', einer: 'E' };
+  const erwartet = haus.nummer === 10 ? { hunderter: 'H', zehner: 'Z', einer: 'E' } : {};
   for (const raum of haus.etagen.flatMap((e) => e.raeume)) {
     if (!erwartet[raum.id]) continue;
     for (let lauf = 0; lauf < 500; lauf++) {
@@ -142,9 +218,65 @@ for (const haus of MH.haeuser) {
 }
 
 // Booklet-Zahlen stichprobenartig
-const raum = (id) => MH.haeuser[0].etagen.flatMap((e) => e.raeume).find((r) => r.id === id);
+const zimmerIn = (nummer) => (id) => MH.haeuser.find((h) => h.nummer === nummer).etagen.flatMap((e) => e.raeume).find((r) => r.id === id);
+const raum = zimmerIn(10);
 assert.deepStrictEqual(raum('waage').aufgaben(true).slice(0, 3).map((a) => [a.a, a.b]), [[214, 214], [214, 321], [214, 112]]);
 assert.deepStrictEqual(raum('gleich-viel').aufgaben(true).map((a) => a.optionen.filter((o) => o.wert === a.zahl).length), [1, 1, 1, 1, 1, 1]);
+
+// Haus 9: die Zahlen aus dem Booklet
+const neun = zimmerIn(9);
+const zahlenIn = (id) => neun(id).aufgaben(true).filter((a) => a.zahl).map((a) => a.zahl);
+assert.deepStrictEqual(MH.haeuser.map((h) => h.nummer), [9, 10]);
+assert.deepStrictEqual(zahlenIn('wie-viele'), [342, 536, 164, 641, 259]);
+assert.deepStrictEqual(zahlenIn('lege'), [241, 173, 358, 519, 406, 290]);
+assert.deepStrictEqual(zahlenIn('geheimschrift'), [234, 344, 462, 425, 158, 209]);
+assert.deepStrictEqual(neun('verbinden').aufgaben(true)[0].zahlen.slice().sort(), [125, 283, 852, 885, 921]);
+assert.deepStrictEqual(zahlenIn('malen').slice(0, 2), [236, 529]);
+assert.deepStrictEqual(zahlenIn('baukasten'), [243, 674, 444, 525]);
+
+// Zahlwörter
+const WOERTER = {
+  100: 'einhundert', 101: 'einhunderteins', 110: 'einhundertzehn', 111: 'einhundertelf', 112: 'einhundertzwölf',
+  116: 'einhundertsechzehn', 117: 'einhundertsiebzehn', 123: 'einhundertdreiundzwanzig', 125: 'einhundertfünfundzwanzig',
+  201: 'zweihunderteins', 236: 'zweihundertsechsunddreißig', 283: 'zweihundertdreiundachtzig', 290: 'zweihundertneunzig',
+  361: 'dreihunderteinundsechzig', 406: 'vierhundertsechs', 529: 'fünfhundertneunundzwanzig', 674: 'sechshundertvierundsiebzig',
+  852: 'achthundertzweiundfünfzig', 885: 'achthundertfünfundachtzig', 921: 'neunhunderteinundzwanzig', 999: 'neunhundertneunundneunzig',
+};
+Object.entries(WOERTER).forEach(([n, w]) => assert.strictEqual(L.zahlwort(Number(n)), w));
+const alleWoerter = new Set();
+for (let n = 100; n <= 999; n++) {
+  alleWoerter.add(L.zahlwort(n));
+  assert.strictEqual(L.wortHinweis(n, L.zahlwort(n)), null);
+}
+assert.strictEqual(alleWoerter.size, 900);
+assert.strictEqual(L.wortHinweis(243, ' Zweihundert drei und vierzig '), null);
+assert.strictEqual(L.wortHinweis(125, 'hundertfünfundzwanzig'), null);
+assert.strictEqual(L.wortHinweis(236, 'zweihundertsechsunddreissig'), null);
+assert(/Hundertern/.test(L.wortHinweis(243, 'dreihundertzweiundvierzig')));
+assert(/zuerst die Einer/.test(L.wortHinweis(243, 'zweihundertvierzigdrei')));
+assert(/kommen die Einer/.test(L.wortHinweis(243, 'zweihundertvierunddreißig')));
+assert(/„und“/.test(L.wortHinweis(243, 'zweihundertdreivierzig')));
+assert(/Ende/.test(L.wortHinweis(243, 'zweihundertdreiundfünfzig')));
+
+// Abzeichen
+const abzeichen = (sterne) => MH.abzeichen.berechne(MH.haeuser, sterne);
+const leer = abzeichen(() => 0);
+assert.strictEqual(leer.length, 16);
+assert.strictEqual(new Set(leer.map((a) => a.id)).size, leer.length, 'doppelte Abzeichen-Kennung');
+assert(leer.every((a) => !a.verdient && a.ist === 0 && a.soll > 0));
+assert(abzeichen(() => 3).every((a) => a.verdient), 'mit allen Sternen muss jedes Abzeichen erreichbar sein');
+const einStern = abzeichen((h, r) => (h === 9 && r === 'wie-viele' ? 1 : 0)).filter((a) => a.verdient).map((a) => a.id);
+assert.deepStrictEqual(einStern, ['erster-stein']);
+const alleMitEinem = abzeichen(() => 1).filter((a) => a.verdient).map((a) => a.id);
+assert.deepStrictEqual(alleMitEinem, ['erster-stein', 'fleissige-biene', 'baumeister', 'dachstuermer', 'sternensammler', 'haus9-richtfest', 'haus10-richtfest']);
+for (const h of MH.haeuser) {
+  const ids = h.etagen.flatMap((e) => e.raeume.map((r) => r.id));
+  (h.abzeichen || []).forEach((a) => a.raeume.forEach((id) => assert(ids.includes(id), 'Abzeichen nennt unbekanntes Zimmer ' + id)));
+}
+
+// Jedes Bild, das genannt wird, liegt auch im Projekt
+const bilder = leer.map((a) => a.bild).concat(MH.haeuser.flatMap((h) => h.etagen.flatMap((e) => e.raeume.map((r) => r.bild))), 'girl', 'sports-medal', 'trophy');
+bilder.filter((b) => !['H', 'Z', 'E'].includes(b)).forEach((b) => assert(fs.existsSync(path.join(wurzel, 'assets/bilder', b + '.svg')), 'Bild fehlt: ' + b));
 
 // Tierliste in der App und in der Datenbank müssen übereinstimmen
 globalThis.window = globalThis;

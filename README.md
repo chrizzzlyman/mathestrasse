@@ -28,15 +28,17 @@ Der Schlüssel in `js/config.js` darf öffentlich sein. Den *secret*- oder *serv
 ## Nach dem ersten Veröffentlichen prüfen
 
 - Ein Test-Kind anlegen, QR-Karte mit dem Tablet scannen.
-- Ein Zimmer lösen: Unten steht „Gespeichert ✔“.
+- Ein Zimmer lösen: Unten steht „Gespeichert“.
 - In der Lehrkraft-Ansicht erscheinen die Sterne.
 - Test-Kind wieder löschen.
 
 ## Ein neues Mathehaus bauen
 
-1. `haeuser/haus10.js` kopieren, z. B. als `haeuser/haus11.js`.
-2. `nummer`, `titel`, `untertitel`, `farbe` (Dach, Wand, helle Fläche), `koennen` und die Zimmer anpassen.
-3. In `haeuser/liste.js` eine Zeile ergänzen: `'haus11.js',`
+Das Aussehen ist in [DESIGN.md](DESIGN.md) festgelegt und gilt auch für neue Häuser.
+
+1. `haeuser/haus10.js` oder `haus9.js` kopieren, z. B. als `haeuser/haus11.js`.
+2. `nummer`, `titel`, `untertitel`, `farbe` (siehe DESIGN.md), `koennen`, `abzeichen` und die Zimmer anpassen.
+3. In `haeuser/liste.js` eine Zeile ergänzen: `'haus11.js',` (die Reihenfolge dort ist die Reihenfolge auf der Straße).
 
 Das Haus erscheint dann auf der Straße und in der Lehrkraft-Ansicht. Die Datenbank bleibt unverändert.
 Jedes Zimmer kann mit `bild` ein kleines Bild bekommen: der Name einer Datei aus `assets/bilder`
@@ -56,9 +58,26 @@ Vorhandene Aufgabenformate (`art`):
 | `entschieden` | `a`, `b` |
 | `ordnen` | `zahlen` (5 Stück), `richtung`: `auf` oder `ab` |
 | `ziffern`, `luecke`, `raetsel`, `fehler` | werden von `js/logik.js` erzeugt |
+| `anzahlen`, `legen`, `aufraeumen`, `stempeln`, `diktat`, `wortSchreiben` | `zahl` |
+| `schreibzahl` | `zahl`, `wirr` (durcheinander gemalt: ja oder nein) |
+| `blitz` | `zahl`, `sekunden` |
+| `verbinde` | `zahlen` |
+| `baukasten` | `zahl`, `bank: { H, E, Z }` (Wortkarten) |
+| `frage` | `frage`, `antworten`, `richtig`, `erklaerung`, `tipp` |
+| `reihenfolge`, `ziffernfolge` | `wie`: `schreibe` oder `spreche` (bei `ziffernfolge` dazu `zahl`) |
+| `dreher`, `buendeln`, `schieben`, `stellenraetsel` | werden von `js/logik.js` erzeugt |
+
+Die Formate ab `anzahlen` stehen in `js/uebungen-stellen.js`.
+
+## Abzeichen
+
+16 Abzeichen: 8 für die ganze Straße und je Haus 4 (Richtfest, zwei besondere, Goldhaus).
+Sie werden in `js/abzeichen.js` allein aus den besten Sternen je Zimmer berechnet. Dafür wird nichts
+zusätzlich gespeichert. Die Lehrkraft-Ansicht zeigt die Anzahl je Kind.
+Mit jedem neuen Haus kommen 2 Abzeichen plus die aus seiner `abzeichen`-Liste dazu.
 
 Die Formate sind auf Zahlen bis 999 ausgelegt. Für andere Themen (z. B. Plus und Minus)
-kommen neue Formate in `js/uebungen.js` dazu.
+kommen neue Formate dazu.
 
 Rechenprüfung: `node tests/aufgaben.test.js`
 
