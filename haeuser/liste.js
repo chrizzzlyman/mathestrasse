@@ -5,6 +5,7 @@
   const MH = global.MH = global.MH || {};
 
   MH.HAUS_DATEIEN = [
+    'haus9.js',
     'haus10.js',
   ];
 

@@ -101,6 +101,11 @@
   }
 
   /* ---------- Fortschritt ---------- */
+  function abzeichenZelle(liste) {
+    const namen = liste.map((a) => (a.gruppe ? `${a.titel} (Haus ${a.gruppe})` : a.titel)).join(', ');
+    return el('td', { class: 'abzeichenzahl', title: namen || 'noch keine' }, liste.length);
+  }
+
   function fortschritt() {
     const haus = MH.haeuser.find((h) => h.nummer === hausNummer) || MH.haeuser[0];
     const raeume = haus.etagen.flatMap((e) => e.raeume);
@@ -128,8 +133,16 @@
 
     const kopf1 = el('tr', {}, el('th', { rowspan: 2, class: 'kindspalte' }, 'Kind'),
       haus.etagen.map((e) => el('th', { colspan: e.raeume.length, class: 'etagenspalte' }, `${e.name} (${e.stufe})`)),
-      el('th', { rowspan: 2 }, 'Zimmer'), el('th', { rowspan: 2 }, 'zuletzt'));
+      el('th', { rowspan: 2 }, 'Zimmer'), el('th', { rowspan: 2 }, 'Abzeichen'), el('th', { rowspan: 2 }, 'zuletzt'));
     const kopf2 = el('tr', {}, raeume.map((r) => el('th', { class: 'raum' }, el('span', {}, r.titel))));
+
+    // Abzeichen zählen über alle Häuser: bestes Ergebnis je Kind und Zimmer
+    const beste = new Map();
+    for (const d of durchgaenge) {
+      const k = `${d.kind_id}|${d.haus}|${d.raum}`;
+      beste.set(k, Math.max(beste.get(k) || 0, d.sterne));
+    }
+    const abzeichenVon = (kind) => MH.abzeichen.verdient(MH.haeuser, (h, r) => beste.get(`${kind.id}|${h}|${r}`) || 0);
 
     const zeilen = kinder.map((kind) => {
       let fertig = 0;
@@ -150,12 +163,13 @@
           el('span', {}, kennung(kind), namen[kind.id] && el('small', {}, namen[kind.id])))),
         zellen,
         el('td', {}, `${fertig}/${raeume.length}`),
+        abzeichenZelle(abzeichenVon(kind)),
         el('td', {}, letzte ? new Date(letzte).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' }) : '–'));
     });
 
     const summe = el('tr', { class: 'summe' }, el('th', { class: 'kindspalte' }, 'geschafft von'),
       raeume.map((r) => el('td', {}, kinder.filter((k) => werte.has(`${k.id}|${r.id}`)).length)),
-      el('td', {}), el('td', {}));
+      el('td', {}), el('td', {}), el('td', {}));
 
     const schwierig = raeume.map((r) => {
       const betroffen = kinder.filter((k) => {
@@ -177,9 +191,10 @@
         el('ul', {}, schwierig.map((x) => el('li', {},
           `${x.r.titel}: ${x.betroffen.map((k) => namen[k.id] || kennung(k)).join(', ')}`))),
         el('p', { class: 'klein' }, 'Kinder mit nur 1 Stern oder der Einschätzung „schwer“.')) : null,
-      el('div', { class: 'tabellenrahmen' },
+      el('div', { class: 'tabellenrahmen', style: `--hell:${haus.farbe.hell}` },
         el('table', {}, el('thead', {}, kopf1, kopf2), el('tbody', {}, zeilen, summe))),
-      el('p', { class: 'klein' }, 'Sterne = bestes Ergebnis. L, M, S = so hat das Kind das Zimmer empfunden (leicht, mittel, schwer).'));
+      el('p', { class: 'klein' }, 'Sterne = bestes Ergebnis. L, M, S = so hat das Kind das Zimmer empfunden (leicht, mittel, schwer).'),
+      el('p', { class: 'klein' }, 'Abzeichen zählen über alle Häuser. Mit der Maus auf die Zahl zeigen, um die Namen zu sehen.'));
   }
 
   /* ---------- Kinder und QR-Karten ---------- */

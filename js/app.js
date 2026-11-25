@@ -17,6 +17,7 @@
 
   function setze(...inhalt) {
     if (kameraStopp) kameraStopp();
+    MH.aufraeumenNachAufgabe();
     if (window.speechSynthesis) speechSynthesis.cancel();
     document.querySelectorAll('.konfetti').forEach((k) => k.remove());
     wurzel.replaceChildren(...inhalt.filter(Boolean));
@@ -24,13 +25,18 @@
   }
 
   const hausNr = (nummer) => MH.haeuser.find((h) => h.nummer === Number(nummer));
-  const farben = (haus) => `--dach:${haus.farbe.dach};--wand:${haus.farbe.wand};--hell:${haus.farbe.hell}`;
+  const farben = (haus) => {
+    const f = haus.farbe;
+    return `--dach:${f.dach};--wand:${f.wand};--hell:${f.hell};--akzent:${f.akzent || f.dach};--rand:${f.rand || '#a3271c'}`;
+  };
   const raeume = (haus) => haus.etagen.flatMap((e) => e.raeume);
   const fertigImZimmer = (haus, raum) => S.sterne(haus.nummer, raum.id) > 0;
   const anzahlFertig = (haus) => raeume(haus).filter((r) => fertigImZimmer(haus, r)).length;
   const stufe = (haus) => Z.stufe(anzahlFertig(haus), raeume(haus).length);
   const etageFertig = (haus, etage) => etage.raeume.every((r) => fertigImZimmer(haus, r));
   const etageOffen = (haus, i) => Boolean(S.sitzung.ansehen) || haus.etagen.slice(0, i).every((e) => etageFertig(haus, e));
+  const alleAbzeichen = () => MH.abzeichen.berechne(MH.haeuser, S.sterne);
+  const plakette = (a) => el('span', { class: 'abzeichenbild', html: Z.plakette(a.bild, a.ring) });
 
   /* ---------- Kopfzeile ---------- */
   function kopf() {
@@ -47,13 +53,22 @@
       el('button', { type: 'button', class: 'logo', onclick: () => gehe('#/strasse') },
         el('span', { class: 'strassenschild' }, 'Mathestraße')),
       el('div', { class: 'kopf-rechts' },
-        el('span', { class: 'wer' }, MH.tierBild(sitzung.gast ? null : sitzung.tier), name),
+        el('span', { class: 'wer' }, MH.tierBild(sitzung.gast ? null : sitzung.tier), el('span', { class: 'wername' }, name)),
+        abzeichenKnopf(),
         ton,
         symbolKnopf('raus', sitzung.gast ? 'Anmelden' : 'Abmelden', () => {
           S.abmelden();
           history.replaceState(null, '', location.pathname);
           anmeldung();
         }, 'klein abmelden')));
+  }
+
+  function abzeichenKnopf() {
+    const anzahl = alleAbzeichen().filter((a) => a.verdient).length;
+    return el('button', {
+      type: 'button', class: 'knopf klein abzeichenknopf', onclick: () => gehe('#/abzeichen'),
+      'aria-label': `Meine Abzeichen: ${anzahl}`,
+    }, el('img', { src: 'assets/bilder/sports-medal.svg', alt: '' }), el('span', { class: 'wortlaut' }, 'Abzeichen'), el('b', {}, anzahl));
   }
 
   /* ---------- Anmeldung ---------- */
@@ -211,8 +226,9 @@
   /* ---------- Straße ---------- */
   function strasse() {
     const sitzung = S.sitzung;
-    // Beim ersten noch nicht fertigen Haus steht das Tier des Kindes
-    const baustelle = MH.haeuser.find((h) => anzahlFertig(h) < raeume(h).length) || MH.haeuser[MH.haeuser.length - 1];
+    // Das Tier steht beim angefangenen Haus, sonst beim ersten noch nicht fertigen
+    const offen = MH.haeuser.filter((h) => anzahlFertig(h) < raeume(h).length);
+    const baustelle = offen.find((h) => anzahlFertig(h) > 0) || offen[0] || MH.haeuser[MH.haeuser.length - 1];
     const reihe = el('div', { class: 'haeuserreihe' },
       MH.haeuser.map((haus) => {
         const n = anzahlFertig(haus), von = raeume(haus).length;
@@ -229,7 +245,7 @@
               ? el('span', { class: 'stand' }, el('img', { src: 'assets/bilder/trophy.svg', alt: '' }), 'Haus fertig!')
               : el('span', { class: 'stand' }, `${n} von ${von} Zimmern gebaut`)));
       }),
-      [1, 2].map(() => el('div', { class: 'grundstueck leer' }, el('span', { class: 'bild', html: Z.bauplatz() }))));
+      Array.from({ length: Math.max(1, 3 - MH.haeuser.length) }, () => el('div', { class: 'grundstueck leer' }, el('span', { class: 'bild', html: Z.bauplatz() }))));
     const gruss = sitzung.gast ? 'Hallo!' : `Hallo, ${sitzung.tier}!`;
     setze(kopf(), el('main', { class: 'strasse' },
       el('div', { html: Z.himmel(), style: 'display:contents' }),
@@ -243,6 +259,9 @@
       el('div', { class: 'gegend' },
         el('div', { class: 'huegel', html: Z.huegel() }),
         reihe, el('div', { class: 'gehweg' }), el('div', { class: 'fahrbahn' }))));
+    // auf schmalen Bildschirmen zum eigenen Haus schieben
+    const meins = reihe.children[MH.haeuser.indexOf(baustelle)];
+    reihe.scrollLeft = Math.max(0, meins.offsetLeft - reihe.offsetLeft - (reihe.clientWidth - meins.offsetWidth) / 2);
   }
 
   /* ---------- Im Haus ---------- */
@@ -326,9 +345,11 @@
     const vorher = stufe(haus);
     const warNeu = !fertigImZimmer(haus, raum);
     const etage = haus.etagen.findIndex((e) => e.raeume.includes(raum));
+    const vorherAbzeichen = new Set(alleAbzeichen().filter((a) => a.verdient).map((a) => a.id));
     const speicherung = S.speichereDurchgang({ haus: haus.nummer, raum: raum.id, sterne, fehler, dauer });
     const jetzt = stufe(haus);
     const neu = jetzt > vorher ? jetzt : null;
+    const neueAbzeichen = alleAbzeichen().filter((a) => a.verdient && !vorherAbzeichen.has(a.id));
     const hausFertig = anzahlFertig(haus) === raeume(haus).length;
     const etageGeschafft = warNeu && etageFertig(haus, haus.etagen[etage]);
 
@@ -371,6 +392,11 @@
           el('div', { class: 'wachstum', html: Z.haus({ nummer: haus.nummer, farbe: haus.farbe, stufe: jetzt, neu }) }),
           MH.tierBild(S.sitzung.gast ? null : S.sitzung.tier)),
         el('p', { class: 'botschaft' }, botschaft),
+        neueAbzeichen.length > 0 && el('section', { class: 'neue-abzeichen' },
+          el('h2', {}, neueAbzeichen.length === 1 ? 'Neues Abzeichen!' : 'Neue Abzeichen!'),
+          el('ul', {}, neueAbzeichen.map((a) => el('li', {}, plakette(a),
+            el('b', {}, a.titel),
+            a.gruppe && el('span', {}, `Haus ${a.gruppe}`))))),
         el('h2', {}, 'So war es für mich:'),
         wahl,
         stand,
@@ -379,7 +405,31 @@
           knopf('Ins Haus', () => gehe(`#/haus/${haus.nummer}`), naechstes ? '' : 'haupt'),
           knopf('Noch einmal üben', () => zimmer(haus, raum))))));
     MH.ton('fertig');
-    if (sterne === 3 || (warNeu && (etageGeschafft || hausFertig))) MH.konfetti();
+    if (sterne === 3 || neueAbzeichen.length || (warNeu && (etageGeschafft || hausFertig))) MH.konfetti();
+  }
+
+  /* ---------- Abzeichen ---------- */
+  function abzeichenAnsicht() {
+    const alle = alleAbzeichen();
+    const karte = (a) => el('li', { class: 'abzeichen' + (a.verdient ? ' verdient' : '') },
+      plakette(a),
+      el('b', {}, a.titel),
+      el('p', {}, a.text),
+      a.verdient
+        ? el('span', { class: 'stand geschafft' }, symbol('haken'), 'Geschafft!')
+        : el('span', { class: 'stand' },
+          el('span', { class: 'baubalken', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.round((a.ist / a.soll) * 100)}%` })),
+          `${a.ist} von ${a.soll}`));
+    const gruppe = (titel, liste, haus) => el('section', { class: 'abzeichengruppe', style: haus ? farben(haus) : '--akzent:var(--sonne)' },
+      el('h2', {}, titel), el('ul', {}, liste.map(karte)));
+    const anzahl = alle.filter((a) => a.verdient).length;
+    setze(kopf(), el('main', { class: 'abzeichenseite' },
+      el('div', { class: 'hauskopf' },
+        symbolKnopf('zurueck', 'Zur Straße', () => gehe('#/strasse'), 'klein'),
+        el('h1', {}, 'Meine Abzeichen'),
+        el('p', { class: 'zaehler' }, `${anzahl} von ${alle.length}`)),
+      gruppe('Auf der ganzen Straße', alle.filter((a) => !a.gruppe)),
+      MH.haeuser.map((haus) => gruppe(`Haus ${haus.nummer}: ${haus.titel}`, alle.filter((a) => a.gruppe === haus.nummer), haus))));
   }
 
   /* ---------- Wegweiser ---------- */
@@ -393,6 +443,7 @@
     if (!S.sitzung) return;
     const [, seite, nummer, raumId] = location.hash.split('/');
     const haus = nummer && hausNr(nummer);
+    if (seite === 'abzeichen') return abzeichenAnsicht();
     if (seite === 'haus' && haus) return hausAnsicht(haus);
     if (seite === 'zimmer' && haus) {
       const i = haus.etagen.findIndex((e) => e.raeume.some((r) => r.id === raumId));

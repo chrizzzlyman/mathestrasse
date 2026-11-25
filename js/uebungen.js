@@ -329,6 +329,11 @@
     };
   }
 
+  // Bausteine, die auch die Formate in uebungen-stellen.js benutzen
+  MH.bausteine = { knopf, pruefKnopf, wackeln, legespiel, WORT };
+  MH.auftraege = {};   // art -> (aufgabe, raum) => Überschrift
+  MH.vorlesetexte = {}; // art -> (aufgabe) => zusätzlicher Text zum Vorlesen
+
   U.ordnen = (feld, a, api) => {
     const auf = a.richtung === 'auf';
     const soll = a.zahlen.slice().sort((x, y) => (auf ? x - y : y - x));
@@ -488,6 +493,7 @@
 
   /* ---------- Auftrag je Aufgabe ---------- */
   MH.auftragVon = (aufgabe, raum) => {
+    if (MH.auftraege[aufgabe.art]) return MH.auftraege[aufgabe.art](aufgabe, raum);
     if (aufgabe.art === 'merksatz') return 'Wie heißt der Merksatz?';
     if (aufgabe.art === 'ordnen') return aufgabe.richtung === 'auf' ? 'Ordne von klein nach groß!' : 'Ordne von groß nach klein!';
     if (aufgabe.art === 'ziffern') {
@@ -503,8 +509,14 @@
     if (aufgabe.art === 'raetsel') text += ' ' + aufgabe.hinweise.map((h) => h.text).join(' ');
     if (aufgabe.art === 'merksatz') text += ` ${aufgabe.vor} … ${aufgabe.nach}`;
     if (aufgabe.art === 'gleichViel') text += ` Die Zahl ist ${aufgabe.zahl}.`;
+    if (MH.vorlesetexte[aufgabe.art]) text += ' ' + MH.vorlesetexte[aufgabe.art](aufgabe);
     return text;
   };
+
+  // Formate mit Zeitschaltern melden hier an, was beim Verlassen zu stoppen ist.
+  let beimVerlassen = [];
+  MH.beimVerlassen = (f) => beimVerlassen.push(f);
+  MH.aufraeumenNachAufgabe = () => { beimVerlassen.forEach((f) => f()); beimVerlassen = []; };
 
   /* ---------- Ein Zimmer durchspielen ---------- */
   MH.raumSpielen = (wurzel, { raum, aufgaben, abschluss }) => {
@@ -522,6 +534,7 @@
     wurzel.append(ziegel, buehne);
 
     const zeige = () => {
+      MH.aufraeumenNachAufgabe();
       const aufgabe = aufgaben[i];
       let versuche = 0, geloest = false;
       const auftrag = MH.auftragVon(aufgabe, raum);

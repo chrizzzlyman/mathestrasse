@@ -17,6 +17,8 @@
   Z.TEILE = 16;
   Z.haus = ({ nummer, farbe, stufe, neu = null }) => {
     const fertig = stufe >= Z.TEILE;
+    const rand = farbe.rand || '#a3271c';       // Rand der Nummernschilder
+    const tief = farbe.schatten || '#4a0d18';   // dunkelt die Seitenwand ab
     const teil = (i, inhalt) => (i <= stufe ? `<g class="teil${i === neu ? ' neu' : ''}">${inhalt}</g>` : '');
 
     const glas = (x, y, w, h, rund = 5) =>
@@ -31,7 +33,7 @@
     const wand = (y, h) =>
       rect(36, y, 144, h, farbe.wand) +
       flaeche(`180,${y} 214,${y - 18} 214,${y + h - 18} 180,${y + h}`, farbe.wand) +
-      flaeche(`180,${y} 214,${y - 18} 214,${y + h - 18} 180,${y + h}`, '#4a0d18', 'opacity=".2"') +
+      flaeche(`180,${y} 214,${y - 18} 214,${y + h - 18} 180,${y + h}`, tief, 'opacity=".2"') +
       rect(36, y, 144, 4, '#000', 'opacity=".07"');
     const deckel = (y) => flaeche(`36,${y} 70,${y - 18} 214,${y - 18} 180,${y}`, farbe.wand) +
       flaeche(`36,${y} 70,${y - 18} 214,${y - 18} 180,${y}`, '#fff', 'opacity=".45"');
@@ -76,7 +78,7 @@
       ziegel += `<path d="${d}" fill="none" stroke="#000" stroke-opacity=".16" stroke-width="2.5" stroke-linecap="round"/>`;
     }
     s += teil(12, flaeche('180,126 214,108 197,56', farbe.wand) +
-      flaeche('180,126 214,108 197,56', '#4a0d18', 'opacity=".2"') +
+      flaeche('180,126 214,108 197,56', tief, 'opacity=".2"') +
       `<path d="M26 130L50 54H197L186 130Z" fill="${farbe.dach}" stroke="${farbe.dach}" stroke-width="5" stroke-linejoin="round"/>` +
       ziegel +
       `<path d="M197 54L218 107" stroke="${farbe.dach}" stroke-width="9" stroke-linecap="round" fill="none"/>
@@ -106,7 +108,7 @@
       flaeche(`192,${y + 9} 202,${y + 3} 202,${y + 24} 192,${y + 30}`, fertig ? '#ffd95c' : '#7fc4f2')).join(''));
 
     // Hausnummernschild wie auf dem Booklet
-    s += teil(13, rect(82, 76, 52, 40, '#fff', 'rx="11" stroke="#a3271c" stroke-width="4"') +
+    s += teil(13, rect(82, 76, 52, 40, '#fff', `rx="11" stroke="${rand}" stroke-width="4"`) +
       `<text x="108" y="106" text-anchor="middle" font-size="29" font-weight="800" fill="#17233f">${nummer}</text>`);
 
     s += teil(16, `<path d="M64 54V16" stroke="#51607a" stroke-width="3.5" stroke-linecap="round" fill="none"/>
@@ -122,7 +124,7 @@
     }
     if (stufe < 13) { // Bauschild mit Hausnummer, solange das richtige Schild noch fehlt
       s += `<path d="M46 282v-26" stroke="#8a5232" stroke-width="5" fill="none"/>
-        ${rect(27, 232, 38, 28, '#fff', 'rx="8" stroke="#a3271c" stroke-width="3.5"')}
+        ${rect(27, 232, 38, 28, '#fff', `rx="8" stroke="${rand}" stroke-width="3.5"`)}
         <text x="46" y="253" text-anchor="middle" font-size="19" font-weight="800" fill="#17233f">${nummer}</text>`;
     }
     return s + '</svg>';
@@ -153,15 +155,18 @@
     rect(x - r * 0.14, y - r * 0.5, r * 0.28, r * 1.1, '#8a5232', 'rx="2"') +
     kreis(x, y - r, r, ton) + kreis(x - r * 0.3, y - r * 1.3, r * 0.45, '#fff', 'opacity=".18"');
 
-  // Zwei Hügelketten mit Bäumen; wird unten bündig abgeschnitten.
+  // Zwei Hügelketten mit Bäumen, unten bündig. Die Zeichnung ist absichtlich sehr breit, damit sie auf
+  // breiten Bildschirmen nicht vergrößert und dadurch oben abgeschnitten wird.
+  const HUEGEL_FERN = 'M-1600 104C-1470 50 -1260 56 -1080 108S-720 46 -520 88S-170 200 0 120C170 40 330 50 520 112S880 40 1090 90S1440 60 1600 108S1940 50 2120 100S2500 40 2700 92S3050 60 3200 108V220H-1600Z';
+  const HUEGEL_NAH = 'M-1600 156C-1480 130 -1300 130 -1100 164S-760 190 -560 164S-220 226 0 172C220 118 430 188 700 156S1160 192 1340 150S1550 142 1600 156S1900 120 2100 150S2480 196 2700 164S3060 130 3200 160V220H-1600Z';
   Z.huegel = () => {
-    let s = '<svg viewBox="0 0 1600 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
-      '<path d="M0 120C170 40 330 50 520 112S880 40 1090 90s350-30 510 18V220H0Z" fill="#a9e27f"/>';
-    for (const [x, y, r] of [[90, 108, 17], [128, 100, 12], [410, 98, 14], [830, 90, 19], [866, 98, 12], [1250, 84, 15], [1520, 100, 18]]) {
+    let s = '<svg viewBox="-1600 0 4800 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">' +
+      `<path d="${HUEGEL_FERN}" fill="#a9e27f"/>`;
+    for (const [x, y, r] of [[-1450, 80, 16], [-1190, 93, 13], [-1150, 100, 18], [-640, 89, 15], [-250, 160, 17], [90, 108, 17], [128, 100, 12], [410, 98, 14], [830, 90, 19], [866, 98, 12], [1250, 84, 15], [1520, 100, 18], [1830, 117, 14], [2290, 120, 18], [2330, 116, 12], [2780, 116, 16], [3090, 103, 13]]) {
       s += baum(x, y, r, '#5fbf5a');
     }
-    s += '<path d="M0 172C220 118 430 188 700 156s460 36 640-6 210-8 260 6v64H0Z" fill="#86d45f"/>';
-    for (const [x, y, r] of [[40, 176, 22], [300, 178, 16], [570, 176, 24], [990, 184, 18], [1160, 180, 25], [1420, 170, 17]]) {
+    s += `<path d="${HUEGEL_NAH}" fill="#86d45f"/>`;
+    for (const [x, y, r] of [[-1510, 156, 19], [-1180, 166, 24], [-830, 200, 17], [-420, 176, 22], [-170, 204, 16], [40, 176, 22], [300, 178, 16], [570, 176, 24], [990, 184, 18], [1160, 180, 25], [1420, 170, 17], [1790, 161, 23], [2230, 181, 17], [2580, 191, 25], [2950, 153, 18]]) {
       s += baum(x, y, r, '#3fae55');
     }
     return s + '</svg>';
@@ -240,6 +245,58 @@
     const farben = FARBEN.bunt;
     const inhalt = art === 'H' ? platte(3, 6, farben.H) : art === 'Z' ? stange(19, 5, farben.Z) : wuerfel(17, 20, farben.E);
     return `<svg viewBox="0 0 48 48" aria-hidden="true">${inhalt}</svg>`;
+  };
+
+  /* ---------- Geheimschrift: Quadrat = Hunderter, Strich = Zehner, Punkt = Einer ---------- */
+  const GEHEIM = { H: '#249a2e', Z: '#b01d12', E: '#1672dc' };
+  const zeichenBei = (art, x, y) => { // x, y = Mitte des Zeichens
+    if (art === 'H') return rect(x - 11, y - 11, 22, 22, 'none', `rx="2" stroke="${GEHEIM.H}" stroke-width="4.5"`);
+    if (art === 'Z') return rect(x - 16, y - 3, 32, 6, GEHEIM.Z, 'rx="3"');
+    return kreis(x, y, 8.5, GEHEIM.E);
+  };
+  Z.zeichen = (art) => `<svg class="gz ${art.toLowerCase()}" viewBox="0 0 ${art === 'Z' ? 36 : 28} 28" aria-hidden="true">${zeichenBei(art, art === 'Z' ? 18 : 14, 14)}</svg>`;
+
+  const beschreibung = (h, z, e) => `Geheimschrift: ${h} Quadrate, ${z} Striche, ${e} Punkte`;
+
+  // Ordentlich: Quadrate zu dritt, Striche zu fünft untereinander, Punkte zu dritt. Immer gleicher Maßstab.
+  Z.geheim = (h, z, e) => {
+    const gruppen = [
+      h && { b: Math.min(h, 3) * 29 - 7, h: Math.ceil(h / 3) * 29 - 7, male: (x, y) => Array.from({ length: h }, (_, i) => zeichenBei('H', x + 11 + (i % 3) * 29, y + 11 + Math.floor(i / 3) * 29)) },
+      z && { b: Math.ceil(z / 5) * 40 - 8, h: Math.min(z, 5) * 15 - 9, male: (x, y) => Array.from({ length: z }, (_, i) => zeichenBei('Z', x + 16 + Math.floor(i / 5) * 40, y + 3 + (i % 5) * 15)) },
+      e && { b: Math.min(e, 3) * 23 - 6, h: Math.ceil(e / 3) * 23 - 6, male: (x, y) => Array.from({ length: e }, (_, i) => zeichenBei('E', x + 8.5 + (i % 3) * 23, y + 8.5 + Math.floor(i / 3) * 23)) },
+    ].filter(Boolean);
+    const breite = gruppen.reduce((a, g) => a + g.b, 0) + Math.max(0, gruppen.length - 1) * 20;
+    let x = (264 - breite) / 2;
+    let s = `<svg class="geheim" viewBox="0 0 264 96" role="img" aria-label="${beschreibung(h, z, e)}">`;
+    for (const g of gruppen) {
+      s += g.male(x, (96 - g.h) / 2).join('');
+      x += g.b + 20;
+    }
+    return s + '</svg>';
+  };
+
+  // Plätze für durcheinander gemalte Zeichen: 6 Spalten, 5 Reihen, in Prozent der Fläche
+  Z.streuung = (anzahl) => MH.logik.misch(Array.from({ length: 30 }, (_, i) => i)).slice(0, anzahl).map((i) => ({
+    x: ((i % 6) + 0.5 + (MH.logik.rng() - 0.5) * 0.16) * (100 / 6),
+    y: (Math.floor(i / 6) + 0.5 + (MH.logik.rng() - 0.5) * 0.3) * 20,
+  }));
+  Z.arten = (h, z, e) => [...Array(h).fill('H'), ...Array(z).fill('Z'), ...Array(e).fill('E')];
+
+  /* ---------- Abzeichen: Rosette mit Bild ---------- */
+  Z.plakette = (bild, ring = 'gold') => {
+    const [hell, dunkel] = {
+      gold: ['#ffd04d', '#d99a00'], rot: ['#ff7a6b', '#c4281a'], blau: ['#8fd6ff', '#2f8fc4'],
+    }[ring] || ['#ffd04d', '#d99a00'];
+    let zacken = '';
+    for (let i = 0; i < 16; i++) {
+      const w = (i / 16) * Math.PI * 2;
+      zacken += kreis((50 + Math.cos(w) * 38).toFixed(1), (46 + Math.sin(w) * 38).toFixed(1), 8, dunkel);
+    }
+    return `<svg class="plakette" viewBox="0 0 100 112" aria-hidden="true">
+      ${flaeche('30,70 16,108 29,103 37,112 50,76', '#2f6fd6')}${flaeche('70,70 84,108 71,103 63,112 50,76', '#1c4fb5')}
+      ${zacken}${kreis(50, 46, 40, dunkel)}${kreis(50, 45, 36, hell)}${kreis(50, 46, 29, '#fff')}
+      <image href="assets/bilder/${bild}.svg" x="29" y="25" width="42" height="42"/>
+    </svg>`;
   };
 
   /* ---------- Hanteln und Sterne ---------- */

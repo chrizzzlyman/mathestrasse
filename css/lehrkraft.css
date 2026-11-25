@@ -20,7 +20,7 @@ body.lk #app { display: block; }
 .lk th, .lk td { border-right: 1px solid var(--linie); border-bottom: 1px solid var(--linie); padding: .4rem; text-align: center; white-space: nowrap; }
 .lk th.raum { height: 142px; vertical-align: bottom; }
 .lk th.raum span { writing-mode: vertical-rl; transform: rotate(180deg); font-weight: 400; }
-.lk .etagenspalte { background: #ffe9e6; font-family: var(--anzeige); }
+.lk .etagenspalte { background: var(--hell); font-family: var(--anzeige); }
 .lk .kindspalte { position: sticky; left: 0; background: var(--papier); text-align: left; z-index: 1; }
 .lk th .wer { display: flex; align-items: center; gap: .6rem; }
 .lk th small { display: block; font-weight: 400; color: var(--leise); }
@@ -59,3 +59,4 @@ body.lk #app { display: block; }
   .qr { width: 36mm; flex-basis: 36mm; }
   @page { margin: 10mm; }
 }
+.lk td.abzeichenzahl { font-weight: 700; cursor: help; }

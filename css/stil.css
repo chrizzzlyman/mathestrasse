@@ -25,6 +25,8 @@
   --dach: #e8321f;
   --wand: #ffb4ae;
   --hell: #fff0ee;
+  --akzent: #e8321f;
+  --rand: #a3271c;
   --anzeige: 'Baloo 2', 'Andika', 'Trebuchet MS', system-ui, sans-serif;
   --zahl: 'Andika', 'Segoe UI', system-ui, sans-serif;
   --schatten: 0 18px 40px -18px rgba(23, 35, 63, .35), 0 2px 6px rgba(23, 35, 63, .08);
@@ -175,7 +177,7 @@ button.grundstueck { cursor: pointer; }
 .grundstueck .maskottchen { --g: 66px; position: absolute; right: 2%; bottom: -8px; }
 button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transform: scale(1.04); }
 .grundstueck.leer { padding-bottom: calc(.9rem + 5.9rem); }
-.namensschild { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; width: min(100%, 270px); min-height: 5.9rem; margin-top: .35rem; background: var(--papier); border-radius: 20px; padding: .45rem .9rem .5rem; box-shadow: 0 6px 0 rgba(23, 35, 63, .18); border-top: 7px solid var(--dach); }
+.namensschild { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; width: min(100%, 270px); min-height: 5.9rem; margin-top: .35rem; background: var(--papier); border-radius: 20px; padding: .45rem .9rem .5rem; box-shadow: 0 6px 0 rgba(23, 35, 63, .18); border-top: 7px solid var(--akzent); }
 .namensschild b { font-family: var(--anzeige); font-size: 1.15rem; line-height: 1.2; }
 .namensschild .stand { display: inline-flex; align-items: center; gap: .35rem; font-size: .9rem; color: var(--leise); line-height: 1.2; }
 .stand img { width: 24px; height: 24px; }
@@ -192,7 +194,7 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
 .schnitt { position: relative; padding-top: 26px; }
 .schnitt::before { content: ''; position: absolute; top: 0; right: 17%; width: 44px; height: 70px; border-radius: 6px 6px 0 0; background: linear-gradient(#8f3f19 0 12px, #d4663a 12px); }
 .dach { position: relative; height: 126px; display: grid; place-items: center; background-color: var(--dach); background-image: radial-gradient(circle at 50% 0, transparent 13px, rgba(0, 0, 0, .15) 14px 16px, transparent 17px); background-size: 34px 22px; clip-path: polygon(0 100%, 11% 0, 89% 0, 100% 100%); box-shadow: inset 0 6px 0 rgba(255, 255, 255, .35), inset 0 -10px 0 rgba(0, 0, 0, .18); }
-.hausschild { background: var(--papier); border: 5px solid #a3271c; border-radius: 18px; font-family: var(--anzeige); font-size: 2.7rem; font-weight: 800; line-height: 1.15; padding: 0 .6em; box-shadow: 0 8px 14px -4px rgba(0, 0, 0, .35); }
+.hausschild { background: var(--papier); border: 5px solid var(--rand); border-radius: 18px; font-family: var(--anzeige); font-size: 2.7rem; font-weight: 800; line-height: 1.15; padding: 0 .6em; box-shadow: 0 8px 14px -4px rgba(0, 0, 0, .35); }
 .mauern { margin: 0 3%; background: var(--wand); box-shadow: var(--schatten); }
 .etage { padding: 1rem; border-bottom: 12px solid #fff; background-image: radial-gradient(rgba(255, 255, 255, .55) 3px, transparent 4px); background-size: 28px 28px; }
 .etage:nth-child(2) { background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, .3) 0 14px, transparent 14px 34px); background-size: auto; }
@@ -204,9 +206,9 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
 .etagenkopf p { display: flex; align-items: center; gap: .4rem; margin: 0; font-size: .95rem; font-family: var(--anzeige); font-weight: 700; }
 .hantel svg { width: 48px; height: 30px; }
 .zimmerreihe { display: flex; flex-wrap: wrap; justify-content: center; gap: .85rem; }
-.zimmer { position: relative; flex: 0 1 calc((100% - 1.7rem) / 3); display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: .35rem; min-height: 150px; padding: .8rem .45rem .6rem; font: inherit; color: var(--tinte); background: var(--papier); border: 4px solid #fff; border-radius: 48px 48px 18px 18px; box-shadow: 0 6px 0 rgba(90, 20, 30, .2); cursor: pointer; transition: transform .16s cubic-bezier(.3, 1.7, .5, 1), box-shadow .16s; }
-.zimmer:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 9px 0 rgba(90, 20, 30, .18); }
-.zimmer:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 rgba(90, 20, 30, .2); }
+.zimmer { position: relative; flex: 0 1 calc((100% - 1.7rem) / 3); display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: .35rem; min-height: 150px; padding: .8rem .45rem .6rem; font: inherit; color: var(--tinte); background: var(--papier); border: 4px solid #fff; border-radius: 48px 48px 18px 18px; box-shadow: 0 6px 0 rgba(23, 35, 63, .2); cursor: pointer; transition: transform .16s cubic-bezier(.3, 1.7, .5, 1), box-shadow .16s; }
+.zimmer:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 9px 0 rgba(23, 35, 63, .18); }
+.zimmer:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 rgba(23, 35, 63, .2); }
 .zimmer.fertig { background: radial-gradient(circle at 50% 28%, #fffbe3, #ffe382); }
 .zimmer:disabled { cursor: default; background: rgba(255, 255, 255, .55); box-shadow: none; }
 .zimmer:disabled .zimmerbild { filter: grayscale(1); opacity: .4; }
@@ -237,7 +239,7 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
 .ziegel i { flex: 1; height: 20px; border-radius: 6px; background: rgba(255, 255, 255, .65); box-shadow: inset 0 2px 5px rgba(23, 35, 63, .15); }
 .ziegel i.jetzt { background: var(--papier); box-shadow: inset 0 0 0 3px var(--sonne); }
 .ziegel i.gelegt { background: linear-gradient(#ef8d52, #dc6c30); box-shadow: inset 0 -5px 0 #a94d1f; }
-.buehne { background: var(--papier); border-top: 12px solid var(--dach); border-radius: 30px; box-shadow: var(--schatten); padding: 1.1rem; }
+.buehne { background: var(--papier); border-top: 12px solid var(--akzent); border-radius: 30px; box-shadow: var(--schatten); padding: 1.1rem; }
 .auftrag { display: flex; align-items: center; gap: .9rem; }
 .auftrag .tierbild, .meldung .tierbild { --g: 64px; }
 .auftrag h2 { position: relative; flex: 1 1 auto; background: var(--hell); border-radius: 20px; padding: .65rem 1rem .55rem; }
@@ -349,9 +351,147 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
 @keyframes platzen { to { scale: 1.5; opacity: 0; visibility: hidden; } }
 .leine { min-height: 2.6rem; display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; font-size: 1.5rem; font-weight: 700; }
 
+/* ---------- Hunderter, Zehner, Einer (Haus 9) ---------- */
+.gz { width: 28px; height: 28px; max-width: none; }
+.gz.z { width: 36px; }
+.tipp { margin: 0; font-size: .95rem; color: var(--leise); }
+.zweiter-schritt { align-items: center; width: 100%; }
+.zahlwort { font-weight: 700; font-size: clamp(1.35rem, 1rem + 1.6vw, 2rem); overflow-wrap: anywhere; }
+.teil-H { color: var(--h); }
+.teil-E { color: var(--e); }
+.teil-Z { color: var(--z); }
+.teil-und { color: var(--tinte); text-decoration: underline; }
+.wortschild { background: var(--papier); border: 3px solid var(--linie); border-radius: 18px; box-shadow: 0 5px 0 var(--linie); padding: .35rem 1.2rem; max-width: 100%; }
+
+.eingabe { display: flex; flex-direction: column; align-items: center; gap: .9rem; width: 100%; }
+.kaestchenreihe { display: flex; gap: .6rem; }
+.kaestchenreihe .spalte { gap: .15rem; font-size: 1.4rem; }
+.kaestchenreihe .zeichenkopf { display: grid; place-items: center; height: 30px; }
+.kaestchen { width: 70px; height: 78px; font: 700 2.5rem/1 var(--zahl); color: var(--tinte); background: var(--papier); border: 3px solid #aab5d4; border-radius: 16px; cursor: pointer; padding: 0; }
+.kaestchen.aktiv { border-color: var(--sonne-tief); background: #fff8dc; box-shadow: 0 0 0 4px rgba(255, 197, 49, .4); }
+.kaestchen.falsch { border-style: dashed; border-color: #ef8d83; background: #ffe4e0; }
+.kaestchen.richtig { border-color: #5cc46c; background: var(--gut-hell); cursor: default; }
+.kaestchen:focus-visible, .streu:focus-visible, .haufen.schiebe:focus-visible { outline: 4px solid #7b3fe4; outline-offset: 3px; }
+.tasten { display: grid; grid-template-columns: repeat(6, minmax(0, 58px)); gap: .6rem; justify-content: center; width: 100%; }
+.tasten .knopf.ziffer { min-width: 0; padding: 0; font-size: 1.5rem; }
+
+.materialkarte { width: min(100%, 480px); }
+.geheimkarte { width: min(100%, 460px); min-height: 140px; display: grid; place-items: center; padding: .9rem .6rem 1.1rem; background: var(--papier); border: 3px solid var(--linie); box-shadow: 0 6px 0 var(--linie); }
+.geheim { width: 100%; height: auto; max-width: 400px; }
+
+.tafel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: min(100%, 520px); background: var(--linie); gap: 3px; border: 3px solid var(--linie); border-radius: 18px; overflow: hidden; }
+.tafelspalte { display: flex; flex-direction: column; align-items: stretch; background: var(--papier); min-width: 0; }
+.tafelkopf { font-family: var(--anzeige); font-weight: 800; font-size: 1.5rem; line-height: 1.5; }
+.tafelspalte.h .tafelkopf { background: #ccf5cc; }
+.tafelspalte.z .tafelkopf { background: #ffd0cc; }
+.tafelspalte.e .tafelkopf { background: #cfe5ff; }
+.tafelziffer { font-size: 2.3rem; font-weight: 700; min-height: 3.4rem; display: grid; place-items: center; }
+.haufen { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 5px; min-height: 112px; padding: .5rem .25rem; }
+.stueck { display: block; line-height: 0; }
+.stueck.neu { animation: aufploppen .4s cubic-bezier(.3, 1.8, .5, 1); }
+.tafelfuss { display: flex; flex-direction: column; align-items: center; gap: .55rem; padding: .3rem .3rem .7rem; border-top: 2px dashed var(--linie); }
+.tafelfuss .tafelziffer { min-height: 2.6rem; font-size: 2rem; }
+.knopf.stempel b { font-size: 1.4rem; }
+.tafelfuss .knopf { width: 100%; max-width: 110px; }
+.knopf.weg .symbol { width: 1.5em; height: 1.5em; }
+.stempelkasten { display: flex; justify-content: center; gap: .8rem; width: 100%; }
+.stempelkasten .knopf.stempel { flex-direction: column; gap: .2rem; width: 100%; font-size: .95rem; }
+.stempelkasten .gz { pointer-events: none; }
+
+.wirrfeld { position: relative; width: min(100%, 460px); height: 270px; border-radius: 22px; background: var(--papier); border: 3px solid var(--linie); box-shadow: 0 6px 0 var(--linie); }
+.streu { position: absolute; translate: -50% -50%; width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; touch-action: manipulation; }
+.streu svg { pointer-events: none; }
+.wirrfeld .gz { width: 34px; height: 34px; }
+.wirrfeld .gz.z { width: 44px; }
+.streu[aria-pressed='true'] svg { opacity: .22; }
+
+.antworten { display: flex; flex-direction: column; gap: .8rem; width: min(100%, 520px); }
+.knopf.antwort { font-family: var(--zahl); font-weight: 400; font-size: 1.1rem; padding-block: .75em; }
+
+.blitzfenster { height: 150px; font-family: var(--anzeige); font-weight: 700; font-size: 1.35rem; }
+.blitzfenster.zu { background: repeating-linear-gradient(45deg, #e7edff 0 18px, #f4f6ff 18px 36px); }
+
+.verbindespalten { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.2fr) minmax(0, .7fr); gap: .9rem; width: 100%; align-items: start; }
+.verbindespalte { display: flex; flex-direction: column; gap: .8rem; min-width: 0; }
+.knopf.paar { width: 100%; min-width: 0; min-height: 78px; padding: .3em .35em; font-family: var(--zahl); }
+.knopf.paar .zahlwort, .zug .zahlwort { font-size: clamp(.95rem, .7rem + .9vw, 1.2rem); }
+.knopf.paar > b { font-size: 1.6rem; }
+.geheimbild { display: block; width: 100%; }
+.verbunden { display: flex; flex-direction: column; gap: .5rem; width: 100%; }
+.verbunden:empty { display: none; }
+.zug { display: grid; grid-template-columns: minmax(0, 1.5fr) 16px minmax(0, 1.2fr) 16px minmax(0, .7fr); align-items: center; animation: aufploppen .35s cubic-bezier(.3, 1.6, .5, 1); }
+.zug .glied { display: grid; place-items: center; min-height: 66px; padding: .2rem .35rem; background: var(--gut-hell); border: 2px solid #5cc46c; border-radius: 14px; min-width: 0; }
+.zug i { height: 6px; background: #5cc46c; }
+.zug b { font-size: 1.5rem; }
+
+.malblatt { height: 140px; }
+.wortzeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .5rem; width: 100%; min-height: 76px; padding: .5rem; border: 3px dashed #aab5d4; border-radius: 18px; background: var(--flaeche); }
+.platzhalter { color: var(--leise); font-size: .95rem; }
+.wortbank { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; width: 100%; }
+.bankteil { display: grid; gap: .6rem; grid-auto-flow: column; grid-template-rows: repeat(3, auto); }
+.knopf.baustein { font-family: var(--zahl); font-size: 1.05rem; min-height: 46px; min-width: 0; padding: .2em .65em; }
+.bankteil.H .knopf, .wortzeile .teil-H { background: #dcf8dc; }
+.bankteil.E .knopf, .wortzeile .teil-E { background: #ddecff; }
+.bankteil.Z .knopf, .wortzeile .teil-Z { background: #ffe0dd; }
+.bankteil.und .knopf { background: #e6e9f2; }
+.knopf.baustein.richtig, .wortzeile .knopf.baustein.richtig:disabled { background: var(--gut-hell); }
+
+.frieda { display: flex; align-items: center; justify-content: center; gap: .9rem; width: min(100%, 520px); text-align: left; }
+.frieda img { width: 84px; height: 84px; flex: 0 0 auto; }
+.sprechblase { position: relative; margin: 0; background: var(--nochmal-hell); border-radius: 20px; padding: .6rem 1rem; }
+.sprechblase::before { content: ''; position: absolute; left: -9px; top: calc(50% - 9px); border: 9px solid transparent; border-right-color: var(--nochmal-hell); border-left: 0; }
+.merksatz.folge { max-width: 34ch; line-height: 3.2; margin: 0; }
+.platz.wortplatz { display: inline-grid; vertical-align: middle; width: 8.2rem; height: 3.6rem; margin: 0 .15em; line-height: 1.2; }
+.wortplatz .knopf.zahlkarte { font-size: 1.15rem; min-width: 0; width: 100%; min-height: 50px; }
+.art-reihenfolge .knopf.zahlkarte { font-size: 1.25rem; }
+.spur { display: flex; gap: .6rem; }
+.spur span { width: 3rem; height: 3.6rem; display: grid; place-items: center; font-size: 2rem; font-weight: 700; border-bottom: 5px solid var(--tinte); }
+
+.hoerknopf { font-size: 1.4rem; min-height: 68px; padding-inline: 1.8em; }
+
+.haufen.schiebe { flex: 0 0 auto; width: 100%; font: inherit; border: 0; background: transparent; cursor: pointer; min-height: 150px; gap: 8px; touch-action: manipulation; }
+.haufen.schiebe:hover:not(:disabled) { background: var(--flaeche); }
+.haufen.schiebe:disabled { cursor: default; }
+.haufen.schiebe.genommen { background: #fff8dc; box-shadow: inset 0 0 0 4px var(--sonne); }
+.plaettchen { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7d8bb0, #25345c 70%); box-shadow: 0 2px 0 #111b36; pointer-events: none; }
+.plaettchen.hoch { translate: 0 -7px; background: radial-gradient(circle at 35% 30%, #fff3a8, var(--sonne) 70%); box-shadow: 0 9px 0 rgba(23, 35, 63, .2); }
+.plaettchen.gewandert { background: radial-gradient(circle at 35% 30%, #fff3a8, var(--sonne) 70%); box-shadow: 0 4px 0 var(--sonne-tief); animation: aufploppen .4s cubic-bezier(.3, 1.8, .5, 1); }
+.knopf.buendler { font-size: 1.05rem; }
+
+.wortfeld { width: min(100%, 520px); font: 700 1.5rem/1.3 var(--zahl); color: var(--tinte); text-align: center; padding: .6rem .8rem; border: 3px solid #aab5d4; border-radius: 18px; background: var(--papier); }
+.wortfeld.richtig { border-color: #5cc46c; background: var(--gut-hell); }
+
+/* ---------- Abzeichen ---------- */
+.abzeichenknopf img { width: 28px; height: 28px; }
+.knopf.klein.abzeichenknopf { gap: .35em; padding-inline: .6em; }
+.abzeichenknopf b { min-width: 1.7em; border-radius: 99px; background: var(--sonne); padding: 0 .35em; line-height: 1.7; }
+.plakette { width: 100%; height: auto; }
+.abzeichenbild { display: block; width: 92px; }
+.abzeichenseite { width: 100%; max-width: 980px; margin: 0 auto; padding: 1rem 1rem 2.5rem; }
+.abzeichenseite .hauskopf h1 { flex: 1 1 200px; }
+.zaehler { margin: 0; font-family: var(--anzeige); font-weight: 800; font-size: 1.3rem; background: var(--papier); border-radius: 99px; padding: .1rem 1.1rem; box-shadow: var(--schatten); }
+.abzeichengruppe { margin-top: 1.4rem; }
+.abzeichengruppe h2 { display: inline-block; background: var(--papier); border-radius: 99px; padding: .3rem 1.1rem .2rem; border-left: 12px solid var(--akzent); box-shadow: 0 4px 0 rgba(23, 35, 63, .12); }
+.abzeichengruppe ul { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: .9rem; }
+.abzeichen { display: flex; flex-direction: column; align-items: center; text-align: center; gap: .3rem; background: var(--papier); border-radius: 24px; padding: .9rem .8rem; box-shadow: var(--schatten); }
+.abzeichen b { font-family: var(--anzeige); font-size: 1.2rem; line-height: 1.2; }
+.abzeichen p { margin: 0; font-size: .95rem; line-height: 1.35; color: var(--leise); }
+.abzeichen .stand { margin-top: auto; padding-top: .3rem; width: 100%; display: flex; flex-direction: column; align-items: center; gap: .15rem; font-size: .9rem; }
+.abzeichen .stand .baubalken { max-width: 150px; }
+.abzeichen .stand.geschafft { flex-direction: row; justify-content: center; gap: .35rem; color: var(--gut); font-weight: 700; }
+.abzeichen:not(.verdient) { background: rgba(255, 255, 255, .7); box-shadow: none; }
+.abzeichen:not(.verdient) .abzeichenbild { filter: grayscale(1); opacity: .35; }
+.abzeichen.verdient { background: radial-gradient(circle at 50% 22%, #fffbe3, #fff 70%); }
+
+.neue-abzeichen { width: 100%; background: var(--nochmal-hell); border-radius: 24px; padding: .8rem .6rem; }
+.neue-abzeichen ul { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: .8rem; margin: .5rem 0 0; padding: 0; }
+.neue-abzeichen li { display: flex; flex-direction: column; align-items: center; width: 130px; line-height: 1.2; animation: sternpop .6s cubic-bezier(.3, 1.9, .5, 1) .6s backwards; }
+.neue-abzeichen li b { font-family: var(--anzeige); font-size: 1.05rem; }
+.neue-abzeichen li span:not(.abzeichenbild) { font-size: .85rem; color: var(--leise); }
+
 /* ---------- Ergebnis ---------- */
 .ergebnis { display: grid; grid-template-columns: minmax(0, 1fr); place-items: start center; padding: 1rem 1rem 2rem; }
-.ergebnis-karte { background: var(--papier); border-top: 12px solid var(--dach); border-radius: 32px; box-shadow: var(--schatten); padding: 1.3rem; text-align: center; width: min(100%, 660px); display: flex; flex-direction: column; align-items: center; gap: .85rem; }
+.ergebnis-karte { background: var(--papier); border-top: 12px solid var(--akzent); border-radius: 32px; box-shadow: var(--schatten); padding: 1.3rem; text-align: center; width: min(100%, 660px); display: flex; flex-direction: column; align-items: center; gap: .85rem; }
 .ergebnis-karte h1, .ergebnis-karte p { margin: 0; }
 .sterne.gross { gap: .3rem; align-items: flex-end; }
 .sterne.gross .stern { width: 68px; height: 68px; }
@@ -404,6 +544,41 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
   .grundstueck.leer { padding-bottom: 5.5rem; }
   .namensschild { min-height: 5rem; }
 }
+/* Tablet quer: Aufgabe und Eingabe sollen ohne Scrollen auf den Bildschirm passen */
+@media (max-height: 860px) and (min-width: 700px) {
+  .uebung { padding-top: .5rem; }
+  .ziegel { margin: .45rem 0; }
+  .ziegel i { height: 14px; }
+  .buehne { padding: .8rem 1.1rem; }
+  .auftrag .tierbild { --g: 52px; }
+  .feld { gap: .7rem; padding-top: .7rem; }
+  .eingabe { flex-direction: row; align-items: flex-end; justify-content: center; gap: 2.2rem; }
+  .tasten { width: auto; grid-template-columns: repeat(6, 52px); gap: .5rem; }
+  .tasten .knopf.ziffer { min-height: 48px; }
+  .materialkarte { width: min(100%, 400px); }
+  .geheimkarte { min-height: 108px; padding: .4rem .6rem .6rem; }
+  .geheim { max-width: 320px; }
+  .malblatt { height: 112px; }
+  .wortschild { padding-block: .1rem; }
+  .stempelkasten .knopf.stempel { flex-direction: row; gap: .5rem; min-height: 48px; }
+  .stempelkasten .fach { flex-direction: row; flex-basis: 220px; }
+  .tafelkopf { font-size: 1.25rem; }
+  .tafelziffer { min-height: 2.6rem; font-size: 1.9rem; }
+  .haufen { min-height: 70px; padding-block: .35rem; }
+  .haufen.schiebe { min-height: 104px; }
+  .tafelfuss { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: .35rem; padding-bottom: .5rem; }
+  .tafelfuss .tafelziffer { flex-basis: 100%; min-height: 2rem; font-size: 1.6rem; }
+  .tafelfuss .knopf { width: auto; min-width: 56px; }
+  .verbindespalte { gap: .45rem; }
+  .knopf.paar { min-height: 56px; padding-block: .1em; box-shadow: 0 3px 0 var(--kante); }
+  .geheimbild .geheim { max-width: 148px; margin: 0 auto; }
+  .zug .glied { min-height: 52px; }
+  .art-buendeln .kaestchen, .art-schieben .grosszahl { font-size: 2rem; }
+  .art-schieben .grosszahl { padding-block: 0; }
+  .art-schieben .wortwahl, .art-schieben .tipp { margin: 0; }
+  .frieda img { width: 60px; height: 60px; }
+  .merksatz.folge { line-height: 2.9; font-size: 1.3rem; }
+}
 @media (max-width: 560px) {
   body { font-size: 1rem; }
   .anmeldung { padding: 1rem .7rem 70px; }
@@ -444,6 +619,50 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
   .knopf.hantelwahl { flex: 1 1 0; width: auto; min-width: 0; max-width: none; }
   .sterne.gross .stern { width: 58px; height: 58px; }
   .sterne.gross .stern:nth-child(2) { width: 74px; height: 74px; }
+  .abzeichenknopf .wortlaut { display: none; }
+  .wer { font-size: .85rem; }
+  .wortfeld { font-size: clamp(16px, 4.3vw, 1.4rem); padding-inline: .25rem; }
+  .kaestchen { width: 62px; height: 70px; font-size: 2.1rem; }
+  .tasten { gap: .45rem; }
+  .wirrfeld .gz { width: 28px; height: 28px; }
+  .wirrfeld .gz.z { width: 36px; }
+  .haufen .gz, .tafelfuss .gz { width: 20px; height: 20px; }
+  .haufen .gz.z, .tafelfuss .gz.z { width: 28px; }
+  .haufen { gap: 3px; }
+  .haufen.schiebe { gap: 6px; }
+  .plaettchen { width: 23px; height: 23px; }
+  .knopf.buendler { font-size: .95rem; }
+  .stempelkasten { gap: .45rem; }
+  .verbindespalten { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.15fr) minmax(0, .55fr); gap: .35rem; }
+  .verbindespalte { gap: .55rem; }
+  .knopf.paar { min-height: 70px; padding: .2em .1em; border-radius: 12px; }
+  .knopf.paar .zahlwort, .zug .zahlwort { font-size: .8rem; }
+  .knopf.paar > b, .zug b { font-size: 1.15rem; }
+  .zug { grid-template-columns: minmax(0, 1.35fr) 6px minmax(0, 1.15fr) 6px minmax(0, .55fr); }
+  .zug .glied { padding: .15rem; }
+  .bankteil { grid-auto-flow: row; grid-template-rows: none; grid-template-columns: repeat(3, auto); justify-content: center; }
+  .bankteil.H { grid-template-columns: repeat(2, auto); }
+  .knopf.baustein { font-size: .95rem; padding: .2em .4em; }
+  .frieda img { width: 60px; height: 60px; }
+  .merksatz.folge { font-size: 1.2rem; }
+  .platz.wortplatz { width: 7.4rem; }
+  .abzeichengruppe ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+  .abzeichen { padding: .7rem .45rem; }
+  .abzeichenbild { width: 76px; }
+}
+/* Handy hochkant: Kopfzeile in einer Reihe, das Tier steht für den Namen */
+@media (max-width: 480px) {
+  .kopf .wername { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .kopf .wer { padding: 3px; }
+}
+@media (max-width: 380px) {
+  .kopf { padding-inline: .3rem; }
+  .logo { padding-inline: 2px; }
+  .logo .strassenschild { font-size: .86rem; padding-inline: .45em; }
+  .kopf-rechts { gap: .25rem; }
+  .kopf .wer .tierbild { --g: 32px; }
+  .knopf.klein.abzeichenknopf { gap: .2em; padding-inline: .35em; }
+  .abzeichenknopf img { width: 24px; height: 24px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition: none !important; }

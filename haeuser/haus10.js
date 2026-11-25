@@ -15,7 +15,7 @@
     nummer: 10,
     titel: 'Vergleichen und ordnen',
     untertitel: 'Ich vergleiche und ordne Zahlen bis 1000.',
-    farbe: { dach: '#e8321f', wand: '#ffb4ae', hell: '#fff0ee' },
+    farbe: { dach: '#e8321f', wand: '#ffb4ae', hell: '#fff0ee', akzent: '#e8321f', rand: '#a3271c', ring: 'rot' },
 
     // Die Liste vom Deckblatt des Booklets: Haken erscheint, wenn alle genannten Zimmer fertig sind.
     koennen: [
@@ -27,6 +27,12 @@
       { text: 'Ich vergleiche Zahlen bis 1000.', raeume: ['entschieden', 'zeichen'] },
       { text: 'Ich ordne Zahlen der Größe nach.', raeume: ['ballons', 'ordnen'] },
       { text: 'Ich erkenne, was gleich viel ist.', raeume: ['gleich-viel'] },
+    ],
+
+    // Besondere Abzeichen dieses Hauses: alle genannten Zimmer mit 3 Sternen
+    abzeichen: [
+      { id: 'waage', titel: 'Waagemeister', text: '3 Sterne in „Die Waage“, „Lege nach“ und „Wo ist mehr?“.', bild: 'balance-scale', raeume: ['waage', 'waage-legen', 'mengen'] },
+      { id: 'krokodil', titel: 'Krokodil-Profi', text: '3 Sterne in „Was entscheidet?“, „Setz das Zeichen“ und „Der Größe nach“.', bild: 'crocodile', raeume: ['entschieden', 'zeichen', 'ordnen'] },
     ],
 
     etagen: [
