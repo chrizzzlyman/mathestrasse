@@ -172,7 +172,11 @@ img { max-width: 100%; }
 .haeuserreihe { display: flex; align-items: flex-end; gap: clamp(.5rem, 3vw, 2.5rem); overflow-x: auto; scroll-snap-type: x proximity; padding: 1rem 1.5rem 0; }
 .haeuserreihe > :first-child { margin-left: auto; }
 .haeuserreihe > :last-child { margin-right: auto; }
-.grundstueck { flex: 0 0 clamp(250px, 31vw, min(390px, 52vh)); display: flex; flex-direction: column; align-items: center; scroll-snap-align: center; background: none; border: 0; padding: 0 0 .9rem; font: inherit; color: inherit; border-radius: 22px; }
+.strassenpfeil { position: absolute; z-index: 3; top: 36%; width: 58px; height: 58px; padding: 0; border-radius: 50%; }
+.strassenpfeil.links { left: .5rem; }
+.strassenpfeil.rechts { right: .5rem; }
+.strassenpfeil .symbol { width: 2em; height: 2em; }
+.grundstueck { flex: 0 0 clamp(250px, 29vw, min(390px, 52vh)); display: flex; flex-direction: column; align-items: center; scroll-snap-align: center; background: none; border: 0; padding: 0 0 .9rem; font: inherit; color: inherit; border-radius: 22px; }
 button.grundstueck { cursor: pointer; }
 .grundstueck .bild { position: relative; display: block; width: 100%; transition: transform .2s cubic-bezier(.3, 1.6, .5, 1); transform-origin: bottom; }
 .grundstueck .bild > svg { width: 100%; height: auto; }
@@ -531,6 +535,97 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
 @keyframes fallen { to { transform: translateY(110vh) rotate(540deg); } }
 
 /* ---------- Kleine Bildschirme ---------- */
+/* ---------- Plus und minus (Mathehaus 11) ---------- */
+.rechenpult { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem 2.4rem; width: 100%; }
+.rblatt { display: flex; flex-direction: column; align-items: center; gap: .55rem; min-width: 0; max-width: 100%; }
+.rzeile { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .35rem; font-size: clamp(1.35rem, 5.2vw, 1.8rem); font-weight: 700; padding: .2rem .45rem; border-radius: 18px; max-width: 100%; }
+.rzeile.dran { background: var(--flaeche); }
+.rblatt.spalten .rzeile { display: grid; grid-template-columns: var(--a, 3em) .9em var(--b, 3em) .9em var(--c, 3em); justify-items: end; }
+.rzahl { display: inline-block; text-align: right; font-variant-numeric: tabular-nums; }
+.rzeichen { display: inline-block; justify-self: center; min-width: .8em; text-align: center; }
+.rluecke { font: 700 1em/1 var(--zahl); color: var(--tinte); min-width: 3em; height: 2.1em; padding: 0 .2em; background: var(--papier); border: 3px solid #aab5d4; border-radius: 12px; cursor: pointer; text-align: center; font-variant-numeric: tabular-nums; }
+.rblatt.spalten .rluecke { width: 100%; min-width: 0; text-align: right; }
+.rluecke.klein { min-width: 1.45em; padding: 0; }
+.rluecke.aktiv { border-color: var(--sonne-tief); background: #fff8dc; box-shadow: 0 0 0 4px rgba(255, 197, 49, .4); }
+.rluecke.falsch { border-style: dashed; border-color: #ef8d83; background: #ffe4e0; }
+.rluecke.richtig { border-color: #5cc46c; background: var(--gut-hell); cursor: default; }
+.rluecke:disabled { color: var(--tinte); }
+.rluecke:focus-visible, .teilstueck:focus-visible { outline: 4px solid #7b3fe4; outline-offset: 3px; }
+.geaendert { border-bottom: 4px solid currentColor; }
+.geaendert.h { color: var(--h); } .geaendert.z { color: var(--z); } .geaendert.e { color: var(--e); }
+.rpad { display: flex; flex-direction: column; align-items: center; gap: .8rem; max-width: 100%; }
+.rtasten { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; width: min(352px, 86vw); }
+.rtasten .knopf.ziffer { min-width: 0; min-height: 48px; padding: 0; font-size: 1.5rem; }
+.rtasten .loeschtaste { order: 1; }
+.rtasten .t6, .rtasten .t7, .rtasten .t8, .rtasten .t9 { order: 2; }
+.rtasten .t0 { order: 3; }
+.rterm { display: inline-flex; align-items: center; gap: .2rem; white-space: nowrap; }
+.rterm.gross { display: block; font-size: clamp(1.8rem, 6vw, 2.5rem); font-weight: 700; line-height: 1.2; margin: 0; }
+.rstelle { display: inline-flex; align-items: center; gap: .1rem; }
+.rstelle b.h { color: var(--h); } .rstelle b.z { color: var(--z); } .rstelle b.e { color: var(--e); }
+
+.materialbild { --platte: clamp(40px, 10vw, 72px); --stange: clamp(36px, 9.5vw, 66px); --wuerfel: clamp(13px, 3.4vw, 21px); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .5rem clamp(.5rem, 2vw, 1.3rem); background: var(--flaeche); border-radius: 20px; padding: .6rem .7rem; max-width: 100%; }
+.bildgruppe { display: flex; align-items: flex-start; gap: .4rem; }
+.bildspalte { display: flex; flex-direction: column; gap: 3px; }
+.bildstueck { position: relative; display: flex; align-items: center; line-height: 0; min-height: 15px; }
+.bildgruppe.mitpfeil .bildstueck { padding-right: 20px; }
+.liegend { flex: 0 0 auto; height: auto; }
+.liegend.h { width: var(--platte, 48px); } .liegend.z { width: var(--stange, 48px); } .liegend.e { width: var(--wuerfel, 17px); }
+.wegpfeil { position: absolute; right: 0; top: 50%; translate: 0 -50%; width: 30px; height: auto; }
+.plusbild { display: flex; align-items: center; justify-content: center; gap: .6rem; max-width: 100%; }
+.plusgross { font-size: 2.2rem; font-weight: 700; }
+.plusbild .materialbild { --platte: clamp(34px, 8vw, 62px); --stange: clamp(30px, 7.5vw, 56px); min-width: 0; }
+
+.legematte { --platte: 46px; --stange: 46px; --wuerfel: 17px; width: min(100%, 620px); }
+.legehaufen { flex: 1; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 6px 5px; min-height: 142px; padding: .45rem .2rem .55rem; }
+.teilstueck { display: grid; place-items: center; min-width: 34px; padding: 3px; margin: 0; border: 0; border-radius: 9px; background: transparent; line-height: 0; }
+button.teilstueck { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; background: var(--flaeche); box-shadow: 0 3px 0 var(--kante); min-height: 30px; }
+button.teilstueck.neu { background: #fff3bf; box-shadow: 0 3px 0 var(--sonne-tief); }
+.teilstueck svg { pointer-events: none; }
+.teilstueck.wird-gezogen { opacity: .3; }
+button.teilstueck.geist { position: fixed; z-index: 50; --platte: 46px; --stange: 46px; --wuerfel: 17px; transform: translate(-50%, -50%) scale(1.25) rotate(-4deg); pointer-events: none; opacity: .95; }
+.wegkorb, .vorratskasten { --platte: 46px; --stange: 46px; --wuerfel: 17px; width: min(100%, 620px); min-height: 96px; border: 3px dashed #aab5d4; border-radius: 20px; background: var(--flaeche); padding: .35rem .5rem .6rem; }
+.wegkorb p, .vorratskasten p { margin: 0 0 .35rem; font-size: .95rem; color: var(--leise); }
+.vorratskasten .teilstueck, .wegkorb .teilstueck { background: var(--papier); }
+.korbteile { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 7px 6px; }
+.quelle { display: flex; flex-direction: column; align-items: center; gap: .35rem; min-width: 92px; font-size: .8rem; }
+.quelle button.teilstueck { min-width: 60px; min-height: 44px; }
+.legematte .tafelspalte.drueber { background: #fff3bf; box-shadow: inset 0 0 0 5px var(--sonne); }
+.wegkorb.drueber, .vorratskasten.drueber { background: #fff3bf; border-color: var(--sonne-tief); }
+.rechnen-teil { width: 100%; }
+.art-legerechnen .zweiter-schritt, .art-aendert .zweiter-schritt, .art-friedafehler .zweiter-schritt { width: 100%; align-items: center; }
+
+.vergleichstafel { display: flex; justify-content: center; gap: .8rem; }
+.knopf.stellenwahl { flex-direction: column; gap: 0; min-width: 84px; font-family: var(--zahl); font-size: 1.9rem; line-height: 1.3; padding: .15em .4em .3em; }
+.knopf.stellenwahl.h b { color: var(--h); } .knopf.stellenwahl.z b { color: var(--z); } .knopf.stellenwahl.e b { color: var(--e); }
+.knopf.stellenwahl b { font-family: var(--anzeige); border-bottom: 3px solid var(--linie); width: 100%; }
+
+.ichsage { display: flex; align-items: center; justify-content: center; gap: .9rem; width: min(100%, 700px); }
+.ichsage .tierbild { --g: 76px; flex: 0 0 auto; }
+.merkblatt { flex: 1; min-width: 0; background: var(--hell); border-radius: 22px; padding: .2rem .8rem; }
+.merkblatt .merksatz.folge { max-width: none; }
+
+.geschichte { font-size: 1.35rem; max-width: 32ch; margin: 0; }
+.rzeile.maschine { flex-wrap: nowrap; gap: .2rem; }
+.rzeile.maschine.dran { background: none; }
+.maschinenpfeil { display: inline-flex; color: var(--leise); }
+.regel { background: var(--schild); color: #fff; border-radius: 16px; padding: .15em .55em; box-shadow: 0 6px 0 #143a87; white-space: nowrap; }
+
+.mauer { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.mauerreihe { display: flex; gap: 6px; }
+.mauer .stein { display: grid; place-items: center; width: clamp(84px, 25vw, 116px); height: 62px; border-radius: 10px; font-size: clamp(1.35rem, 5vw, 1.75rem); font-weight: 700; }
+.mauer span.stein { background: linear-gradient(#ffdcb4, #ffc98e); box-shadow: inset 0 -6px 0 #e39f58; padding-bottom: 5px; }
+
+.ballon.daneben { opacity: .4; animation: none; cursor: default; }
+.loch.gefunden { color: var(--gut); }
+.aussagen.rechnungsliste { grid-template-columns: repeat(auto-fit, minmax(244px, 1fr)); width: min(100%, 560px); }
+.rechnungsliste .knopf.aussage { padding-inline: .4em 1.3em; }
+
+@media (min-width: 700px) {
+  .rtasten { grid-template-columns: repeat(3, 62px); width: auto; }
+  .rtasten .loeschtaste, .rtasten .t6, .rtasten .t7, .rtasten .t8, .rtasten .t9, .rtasten .t0 { order: 0; }
+}
+
 @media (max-width: 900px) {
   .hausansicht { grid-template-columns: minmax(0, 740px); }
   .baustand { display: none; }
@@ -553,7 +648,7 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
   .gegend { --fahrbahn: 56px; --weg: 20px; --wiese: 108px; }
   .fahrbahn::after { top: 29px; height: 6px; }
   .haeuserreihe { padding-top: 0; }
-  .grundstueck { flex-basis: min(31vw, 38vh); padding-bottom: .5rem; }
+  .grundstueck { flex-basis: min(29vw, 38vh); padding-bottom: .5rem; }
   .grundstueck.leer { padding-bottom: 5.5rem; }
   .namensschild { min-height: 5rem; }
 }
@@ -591,6 +686,19 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
   .art-schieben .wortwahl, .art-schieben .tipp { margin: 0; }
   .frieda img { width: 60px; height: 60px; }
   .merksatz.folge { line-height: 2.9; font-size: 1.3rem; }
+  .art-paeckchen .rblatt { gap: .35rem; }
+  .art-bildrechnung .materialbild { --platte: 60px; --stange: 54px; --wuerfel: 17px; padding: .4rem .6rem; }
+  .art-bildrechnung .plusbild .materialbild { --platte: 52px; --stange: 46px; --wuerfel: 16px; }
+  .art-bildrechnung .rblatt { gap: .4rem; }
+  .rzeile { font-size: 1.6rem; }
+  .rtasten { grid-template-columns: repeat(3, 58px); gap: .45rem; }
+  .rtasten .knopf.ziffer { min-height: 46px; }
+  .legehaufen { min-height: 118px; padding-block: .3rem .4rem; gap: 5px 4px; }
+  .wegkorb, .vorratskasten { min-height: 78px; padding-block: .25rem .45rem; }
+  .rterm.gross { font-size: 1.8rem; }
+  .mauer .stein { height: 56px; }
+  .geschichte { font-size: 1.2rem; }
+  .art-ergebnisballons .ballon { width: 92px; height: 112px; font-size: 1.45rem; }
 }
 @media (max-width: 560px) {
   body { font-size: 1rem; }
@@ -659,6 +767,23 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
   .frieda img { width: 60px; height: 60px; }
   .merksatz.folge { font-size: 1.2rem; }
   .platz.wortplatz { width: 7.4rem; }
+  .ichsage { flex-direction: column; gap: .4rem; }
+  .ichsage .tierbild { display: none; }
+  .merkblatt { width: 100%; }
+  .merkblatt .merksatz.folge { line-height: 2.35; font-size: 1.05rem; }
+  .merkblatt .platz.wortplatz { width: 6.8rem; height: 2.7rem; }
+  .merkblatt .wortplatz .knopf.zahlkarte { min-height: 40px; font-size: 1rem; }
+  .art-merkspruch { gap: .7rem; }
+  .geschichte { font-size: 1.15rem; }
+  .rzeile { padding-inline: .2rem; gap: .25rem; }
+  .art-bildrechnung .stellenzeile { font-size: 1.3rem; }
+  .legematte { --platte: 38px; --stange: 38px; --wuerfel: 14px; }
+  .wegkorb, .vorratskasten { --platte: 38px; --stange: 38px; --wuerfel: 14px; }
+  .teilstueck { min-width: 28px; padding: 2px; }
+  .quelle { min-width: 80px; }
+  .vergleichstafel { gap: .5rem; }
+  .art-ergebnisballons .ballon { width: 88px; height: 108px; font-size: 1.35rem; }
+  .art-ergebnisballons .ballonhimmel { gap: .8rem; }
   .abzeichengruppe ul { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
   .abzeichen { padding: .7rem .45rem; }
   .abzeichenbild { width: 76px; }

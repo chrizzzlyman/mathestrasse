@@ -21,6 +21,22 @@ const rechne = (text) => {
   return text.split('+').reduce((s, t) => s + Number(t.trim()), 0);
 };
 
+/* Haus 11: nachrechnen und sicherstellen, dass nie gebündelt oder entbündelt werden muss */
+const rechneOp = (a, op, b) => (op === '+' ? a + b : a - b);
+const ohneBuendeln = (a, op, b) => {
+  const wo = `${a} ${op} ${b}`;
+  assert(['+', '-'].includes(op) && Number.isInteger(a) && Number.isInteger(b) && a > 0 && b > 0, wo);
+  const c = rechneOp(a, op, b);
+  assert(c > 0 && c <= 999, `Ergebnis außerhalb: ${wo} = ${c}`);
+  const x = L.stellen(a), y = L.stellen(b);
+  for (const s of ['h', 'z', 'e']) {
+    if (op === '-') assert(x[s] >= y[s], 'entbündeln nötig: ' + wo);
+    // 90 + 10 = 100 und 3 + 7 = 10 stehen so im Heft
+    else if (!(c === 100 && a < 100) && !(c === 10 && a < 10)) assert(x[s] + y[s] <= 9, 'bündeln nötig: ' + wo);
+  }
+};
+const einTeil = (b) => assert((b >= 100 && b % 100 === 0) || (b >= 10 && b < 100 && b % 10 === 0), 'keine glatte Zahl: ' + b);
+
 const pruefe = {
   vergleich(a) {
     dreistellig(a.a); dreistellig(a.b);
@@ -159,6 +175,55 @@ const pruefe = {
     assert.deepStrictEqual(passend, [a.zahl], 'Stellen-Rätsel ist nicht eindeutig');
   },
   wortSchreiben(a) { dreistellig(a.zahl); assert.strictEqual(L.wortHinweis(a.zahl, L.zahlwort(a.zahl)), null); },
+
+  /* Haus 11 */
+  paeckchen(a) {
+    assert(a.zeilen.length >= 2 && a.zeilen.length <= 4);
+    a.zeilen.forEach((z) => { ohneBuendeln(z.a, z.op, z.b); assert(['a', 'b', 'c'].includes(z.luecke)); });
+  },
+  bildrechnung(a) {
+    ohneBuendeln(a.a, a.op, a.b);
+    einTeil(a.b);
+    assert(a.a >= 100 && rechneOp(a.a, a.op, a.b) >= 100 && a.a <= 999);
+  },
+  legerechnen(a) {
+    this.bildrechnung(a);
+    assert(a.b / (a.b >= 100 ? 100 : 10) <= 6, `zu viele Teile zu ziehen: ${a.a}${a.op}${a.b}`);
+  },
+  aendert(a) { this.bildrechnung(a); },
+  merkspruch(a) { assert(['H', 'Z'].includes(a.wie)); },
+  denkzahl(a) { ohneBuendeln(a.a, a.op, a.b); },
+  mauer(a) {
+    const s = a.steine;
+    assert.strictEqual(s.length, 6);
+    assert.strictEqual(s[3], s[0] + s[1]);
+    assert.strictEqual(s[4], s[1] + s[2]);
+    assert.strictEqual(s[5], s[3] + s[4]);
+    [[s[0], s[1]], [s[1], s[2]], [s[3], s[4]]].forEach(([x, y]) => ohneBuendeln(x, '+', y));
+    // aus den vorgegebenen Steinen lassen sich alle anderen ausrechnen
+    const bekannt = new Set(a.gegeben);
+    for (let i = 0; i < 6; i++) {
+      for (const d of [[0, 1, 3], [1, 2, 4], [3, 4, 5]]) if (d.filter((x) => bekannt.has(x)).length === 2) d.forEach((x) => bekannt.add(x));
+    }
+    assert.strictEqual(bekannt.size, 6, 'Mauer nicht lösbar: ' + a.gegeben);
+    assert.strictEqual(a.gegeben.length, 3);
+  },
+  ergebnisballons(a) {
+    ohneBuendeln(a.a, a.op, a.b);
+    assert.strictEqual(a.optionen.length, 5);
+    assert.strictEqual(new Set(a.optionen).size, 5);
+    assert(a.optionen.includes(rechneOp(a.a, a.op, a.b)));
+    a.optionen.forEach((n) => assert(n > 0 && n <= 999, 'Ballonzahl ' + n));
+  },
+  friedafehler(a) {
+    assert.strictEqual(a.zeilen.length, 4);
+    a.zeilen.forEach((z) => {
+      ohneBuendeln(z.a, z.op, z.b);
+      assert.strictEqual(z.stimmt, z.ergebnis === rechneOp(z.a, z.op, z.b));
+      assert(z.ergebnis > 0 && z.ergebnis <= 999, 'Friedas Ergebnis ' + z.ergebnis);
+    });
+    assert.strictEqual(a.zeilen.filter((z) => !z.stimmt).length, 2);
+  },
 };
 
 // Grundregeln
@@ -226,13 +291,36 @@ assert.deepStrictEqual(raum('gleich-viel').aufgaben(true).map((a) => a.optionen.
 // Haus 9: die Zahlen aus dem Booklet
 const neun = zimmerIn(9);
 const zahlenIn = (id) => neun(id).aufgaben(true).filter((a) => a.zahl).map((a) => a.zahl);
-assert.deepStrictEqual(MH.haeuser.map((h) => h.nummer), [9, 10]);
+assert.deepStrictEqual(MH.haeuser.map((h) => h.nummer), [9, 10, 11]);
 assert.deepStrictEqual(zahlenIn('wie-viele'), [342, 536, 164, 641, 259]);
 assert.deepStrictEqual(zahlenIn('lege'), [241, 173, 358, 519, 406, 290]);
 assert.deepStrictEqual(zahlenIn('geheimschrift'), [234, 344, 462, 425, 158, 209]);
 assert.deepStrictEqual(neun('verbinden').aufgaben(true)[0].zahlen.slice().sort(), [125, 283, 852, 885, 921]);
 assert.deepStrictEqual(zahlenIn('malen').slice(0, 2), [236, 529]);
 assert.deepStrictEqual(zahlenIn('baukasten'), [243, 674, 444, 525]);
+
+// Haus 11: die Aufgaben aus dem Booklet
+const elf = zimmerIn(11);
+const alsText = (z) => `${z.a}${z.op}${z.b}`;
+const imHeft = (id) => elf(id).aufgaben(true).flatMap((a) => a.zeilen.map(alsText));
+assert.strictEqual(imHeft('minus100').length, 15);
+['8-3', '60-20', '90-40', '70-30'].forEach((t) => assert(imHeft('minus100').includes(t), t));
+['6+2', '90+10', '40+50'].forEach((t) => assert(imHeft('plus100').includes(t), t));
+['400-200', '577-300', '100+200', '339+600'].forEach((t) => assert(imHeft('hunderter').includes(t), t));
+['140-20', '673-60', '140+20', '633+60'].forEach((t) => assert(imHeft('zehner').includes(t), t));
+assert.deepStrictEqual(elf('bild-minus').aufgaben(true).map(alsText), ['500-200', '234-100', '452-300', '356-40']);
+assert.deepStrictEqual(elf('bild-plus').aufgaben(true).map(alsText), ['400+200', '131+100', '314+300', '313+40']);
+assert.strictEqual(alsText(elf('wegnehmen').aufgaben(true)[0]), '900-400');
+assert.strictEqual(alsText(elf('dazulegen').aufgaben(true)[0]), '500+400');
+assert.deepStrictEqual(elf('stangen').aufgaben(true).slice(0, 2).map(alsText), ['234-20', '231+10']);
+
+// Hinweise nennen die richtige Verwechslung
+assert(/nur die Zehner/.test(L.rechenHinweis(345, '+', 20, 545)));
+assert(/nur die Hunderter/.test(L.rechenHinweis(345, '+', 200, 365)));
+assert(/hier steht minus/.test(L.rechenHinweis(80, '-', 30, 110)));
+assert(/kleine Aufgabe/.test(L.rechenHinweis(80, '-', 30, 40)));
+assert(/rückwärts: 540 − 200/.test(L.zeilenHinweis({ a: 340, op: '+', b: 200, luecke: 'a' })));
+assert(/rückwärts: 100 \+ 30/.test(L.zeilenHinweis({ a: 130, op: '-', b: 30, luecke: 'a' })));
 
 // Zahlwörter
 const WOERTER = {
@@ -261,14 +349,14 @@ assert(/Ende/.test(L.wortHinweis(243, 'zweihundertdreiundfünfzig')));
 // Abzeichen
 const abzeichen = (sterne) => MH.abzeichen.berechne(MH.haeuser, sterne);
 const leer = abzeichen(() => 0);
-assert.strictEqual(leer.length, 16);
+assert.strictEqual(leer.length, 20);
 assert.strictEqual(new Set(leer.map((a) => a.id)).size, leer.length, 'doppelte Abzeichen-Kennung');
 assert(leer.every((a) => !a.verdient && a.ist === 0 && a.soll > 0));
 assert(abzeichen(() => 3).every((a) => a.verdient), 'mit allen Sternen muss jedes Abzeichen erreichbar sein');
 const einStern = abzeichen((h, r) => (h === 9 && r === 'wie-viele' ? 1 : 0)).filter((a) => a.verdient).map((a) => a.id);
 assert.deepStrictEqual(einStern, ['erster-stein']);
 const alleMitEinem = abzeichen(() => 1).filter((a) => a.verdient).map((a) => a.id);
-assert.deepStrictEqual(alleMitEinem, ['erster-stein', 'fleissige-biene', 'baumeister', 'dachstuermer', 'sternensammler', 'haus9-richtfest', 'haus10-richtfest']);
+assert.deepStrictEqual(alleMitEinem, ['erster-stein', 'fleissige-biene', 'baumeister', 'dachstuermer', 'sternensammler', 'haus9-richtfest', 'haus10-richtfest', 'haus11-richtfest']);
 for (const h of MH.haeuser) {
   const ids = h.etagen.flatMap((e) => e.raeume.map((r) => r.id));
   (h.abzeichen || []).forEach((a) => a.raeume.forEach((id) => assert(ids.includes(id), 'Abzeichen nennt unbekanntes Zimmer ' + id)));

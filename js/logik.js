@@ -385,4 +385,168 @@
       Z: dazu(s.z, [2, 3, 4, 5, 6, 7, 8, 9]).map(L.zehnerWort),
     };
   };
+
+  /* ---------- Plus und minus ohne Bündeln (Haus 11) ----------
+   * Wie im Heft: Es ändert sich nie mehr als eine Stelle durch die Rechnung selbst. */
+  L.OP = { '+': '+', '-': '−' }; // das richtige Minuszeichen (in den Schriften enthalten)
+  L.rechne = (a, op, b) => (op === '+' ? a + b : a - b);
+  const gegen = (op) => (op === '+' ? '-' : '+');
+  const opArt = () => L.eins(['+', '-']);
+
+  // zwei Ziffern x und y, so dass x + y höchstens 9 bzw. x − y mindestens 1 ist
+  const ziffernpaar = (op) => {
+    if (op === '+') { const x = L.ganz(1, 8); return [x, L.ganz(1, 9 - x)]; }
+    const x = L.ganz(2, 9); return [x, L.ganz(1, x - 1)];
+  };
+
+  // ohne doppelte Paare
+  L.kleinePaare = (op, anzahl) => {
+    const gewaehlt = new Map();
+    while (gewaehlt.size < anzahl) {
+      const p = ziffernpaar(op);
+      gewaehlt.set(p.join(), p);
+    }
+    return [...gewaehlt.values()];
+  };
+
+  // Hunderterzahl dazu oder weg. art: 'H' glatt (400), 'Z' (330), 'E' (621)
+  L.mitHundertern = (op, art) => {
+    const [x, y] = ziffernpaar(op);
+    const a = L.zahl(x, art === 'H' ? 0 : L.ganz(1, 9), art === 'E' ? L.ganz(1, 9) : 0);
+    return { a, op, b: y * 100 };
+  };
+
+  // Zehnerzahl dazu oder weg. art: 'Z' (140), 'E' (138)
+  L.mitZehnern = (op, art) => {
+    const [x, y] = ziffernpaar(op);
+    return { a: L.zahl(L.ganz(1, 9), x, art === 'E' ? L.ganz(1, 9) : 0), op, b: y * 10 };
+  };
+
+  // Aufgaben zum Legen: höchstens `hoechstens` Teile werden bewegt.
+  // stelle: 'H' (Platten) oder 'Z' (Stangen); glatt: nur Hunderterplatten
+  L.legeAufgabe = (op, stelle, glatt = false, hoechstens = 5) => {
+    let t;
+    do {
+      t = stelle === 'H' ? L.mitHundertern(op, glatt ? 'H' : 'E') : L.mitZehnern(op, 'E');
+    } while (t.b / (stelle === 'H' ? 100 : 10) > hoechstens);
+    return t;
+  };
+
+  // Rechne erst nur die Ziffern: 8 − 3 hilft bei 80 − 30
+  L.helferpaeckchen = (op) => L.kleinePaare(op, 2).flatMap(([x, y]) => [
+    { a: x, op, b: y, luecke: 'c' },
+    { a: x * 10, op, b: y * 10, luecke: 'c' },
+  ]);
+
+  L.platzhalter = (art, op = opArt(), luecke = L.eins(['a', 'b'])) => {
+    let t;
+    if (art === 'bis100') {
+      const [x, y] = ziffernpaar(op);
+      t = { a: x * 10, op, b: y * 10 };
+    } else if (art === 'H') t = L.mitHundertern(op, L.eins(['H', 'Z', 'E']));
+    else t = L.mitZehnern(op, L.eins(['Z', 'E']));
+    return Object.assign(t, { luecke });
+  };
+
+  // Welche Stelle ändert sich durch b? (b ist eine glatte Hunderter- oder Zehnerzahl)
+  L.stelleVon = (b) => (b >= 100 && b % 100 === 0 ? 'H' : b >= 10 && b % 10 === 0 ? 'Z' : 'E');
+
+  // Typische Verwechslungen: falsche Stelle verändert oder falsches Rechenzeichen
+  // die echten Verwechslungen stehen vorne, danach knapp daneben
+  L.falscheErgebnisse = (a, op, b) => {
+    const soll = L.rechne(a, op, b);
+    const kandidaten = [
+      L.rechne(a, op, b * 10), L.rechne(a, op, Math.floor(b / 10)),
+      L.rechne(a, gegen(op), b),
+      soll + 100, soll - 100, soll + 10, soll - 10, soll + 1, soll - 1, soll + 200, soll - 200,
+    ];
+    return [...new Set(kandidaten)].filter((w) => w !== soll && w > 0 && w <= 999);
+  };
+
+  L.rechenHinweis = (a, op, b, getippt) => {
+    const soll = L.rechne(a, op, b);
+    const o = L.OP[op];
+    if (getippt === L.rechne(a, gegen(op), b)) {
+      return op === '+' ? 'Achtung, hier steht plus: Es kommt etwas dazu.' : 'Achtung, hier steht minus: Es wird etwas weggenommen.';
+    }
+    if (a < 10) return op === '+' ? `Nimm ${a} Finger und ${b} dazu. Zähle dann.` : `Starte bei ${a} und zähle ${b} zurück.`;
+    if (a < 100 && a % 10 === 0 && b % 10 === 0) return `Die kleine Aufgabe hilft: ${a / 10} ${o} ${b / 10}.`;
+    const ist = L.stellen(getippt), richtig = L.stellen(soll);
+    if (L.stelleVon(b) === 'H') {
+      if (ist.z !== richtig.z || ist.e !== richtig.e) return 'Bei Hunderterzahlen ändern sich nur die Hunderter. Zehner und Einer bleiben gleich.';
+      return `Rechne die Hunderter: ${L.stellen(a).h} ${o} ${b / 100}.`;
+    }
+    if (L.stelleVon(b) === 'Z') {
+      if (ist.h !== richtig.h || ist.e !== richtig.e) return 'Bei Zehnerzahlen ändern sich nur die Zehner. Hunderter und Einer bleiben gleich.';
+      return `Rechne die Zehner: ${L.stellen(a).z} ${o} ${b / 10}.`;
+    }
+    return 'Rechne noch einmal Stelle für Stelle.';
+  };
+
+  // Hinweis, wenn in einer Zeile die Zahl an der Stelle `luecke` gesucht wird
+  L.zeilenHinweis = ({ a, op, b, luecke }, getippt) => {
+    const c = L.rechne(a, op, b);
+    if (luecke === 'b') {
+      return op === '+'
+        ? `Wie viel kommt zu ${a} dazu, damit es ${c} sind? Vergleiche Stelle für Stelle.`
+        : `Wie viel wurde von ${a} weggenommen, damit ${c} übrig bleiben? Vergleiche Stelle für Stelle.`;
+    }
+    if (luecke === 'a') return `Rechne rückwärts: ${c} ${L.OP[gegen(op)]} ${b}.`;
+    return L.rechenHinweis(a, op, b, getippt);
+  };
+
+  /* ---------- Zahlenmauern ----------
+   * Steine 0 bis 2 unten, 3 und 4 in der Mitte, 5 oben. */
+  L.MAUER_MUSTER = [[0, 1, 2], [0, 1, 4], [0, 2, 3], [0, 3, 5]]; // welche Steine vorgegeben sind
+  // Je Stelle: links + 2 × Mitte + rechts ist höchstens 9, dann muss nie gebündelt werden
+  const dreier = (min) => {
+    let x, y, z;
+    do { x = L.ganz(min, 6); y = L.ganz(min, 3); z = L.ganz(min, 6); } while (x + 2 * y + z > 9);
+    return [x, y, z];
+  };
+  // art: 'H' Hunderter, 'Z' Zehner, 'EH' und 'EZ': links eine gemischte Zahl
+  L.mauer = (art, muster) => {
+    const wert = art.endsWith('H') ? 100 : 10;
+    let unten;
+    if (art.length === 1) unten = dreier(1).map((v) => v * wert);
+    else {
+      const [x, y, z] = dreier(1);
+      const links = wert === 100
+        ? L.zahl(x, L.ganz(1, 9), L.ganz(1, 9))
+        : L.zahl(L.ganz(1, 9), x, L.ganz(1, 9));
+      unten = [links, y * wert, z * wert];
+    }
+    const [p, q, r] = unten;
+    return { art: 'mauer', steine: [p, q, r, p + q, q + r, p + 2 * q + r], gegeben: muster };
+  };
+
+  /* ---------- Weitere Aufgaben ---------- */
+  L.ergebnisBallons = () => {
+    const op = opArt();
+    const t = L.eins([() => L.mitHundertern(op, L.eins(['H', 'Z', 'E'])), () => L.mitZehnern(op, L.eins(['Z', 'E']))])();
+    const richtig = L.rechne(t.a, t.op, t.b);
+    const alle = L.falscheErgebnisse(t.a, t.op, t.b);
+    const falsch = [...L.misch(alle.slice(0, 5)), ...L.misch(alle.slice(5))].slice(0, 4);
+    return Object.assign({ art: 'ergebnisballons', optionen: L.misch([richtig, ...falsch]) }, t);
+  };
+
+  // vier Rechnungen von Frieda, zwei davon falsch
+  L.friedaFehler = () => {
+    const zeilen = L.misch([
+      L.mitZehnern('+', 'E'), L.mitZehnern('-', 'E'), L.mitHundertern('+', 'E'), L.mitHundertern('-', 'E'),
+    ]);
+    const falsch = L.misch([0, 1, 2, 3]).slice(0, 2);
+    return {
+      art: 'friedafehler',
+      zeilen: zeilen.map(({ a, op, b }, i) => {
+        const stimmt = !falsch.includes(i);
+        // am liebsten Friedas Klassiker: die falsche Stelle verändert
+        const andere = L.stelleVon(b) === 'Z' ? b * 10 : b / 10;
+        const w = L.rechne(a, op, andere);
+        const ergebnis = stimmt ? L.rechne(a, op, b)
+          : (w > 0 && w <= 999 ? w : L.eins(L.falscheErgebnisse(a, op, b)));
+        return { a, op, b, ergebnis, stimmt };
+      }),
+    };
+  };
 })(typeof window !== 'undefined' ? window : globalThis);

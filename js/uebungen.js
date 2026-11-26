@@ -575,6 +575,11 @@
           weiter.focus({ preventScroll: true });
           meldung.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         },
+        // blendet den letzten Hinweis aus, wenn innerhalb einer Aufgabe ein Schritt geschafft ist
+        ruhe: () => {
+          meldung.className = 'meldung';
+          meldung.replaceChildren();
+        },
         // zählt einen Fehler; den Hinweis zeigt die Übung selbst (ohne dass die Seite rollt)
         vertan: () => {
           versuche++;

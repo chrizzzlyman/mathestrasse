@@ -53,9 +53,9 @@ Einstellen: `lehrkraft.html` → Reiter *Zeitlimit*. Es gilt für jedes Kind pro
 
 Das Aussehen ist in [DESIGN.md](DESIGN.md) festgelegt und gilt auch für neue Häuser.
 
-1. `haeuser/haus10.js` oder `haus9.js` kopieren, z. B. als `haeuser/haus11.js`.
+1. `haeuser/haus11.js`, `haus10.js` oder `haus9.js` kopieren, z. B. als `haeuser/haus12.js`.
 2. `nummer`, `titel`, `untertitel`, `farbe` (siehe DESIGN.md), `koennen`, `abzeichen` und die Zimmer anpassen.
-3. In `haeuser/liste.js` eine Zeile ergänzen: `'haus11.js',` (die Reihenfolge dort ist die Reihenfolge auf der Straße).
+3. In `haeuser/liste.js` eine Zeile ergänzen: `'haus12.js',` (die Reihenfolge dort ist die Reihenfolge auf der Straße).
 
 Das Haus erscheint dann auf der Straße und in der Lehrkraft-Ansicht. Die Datenbank bleibt unverändert.
 Jedes Zimmer kann mit `bild` ein kleines Bild bekommen: der Name einer Datei aus `assets/bilder`
@@ -83,18 +83,23 @@ Vorhandene Aufgabenformate (`art`):
 | `frage` | `frage`, `antworten`, `richtig`, `erklaerung`, `tipp` |
 | `reihenfolge`, `ziffernfolge` | `wie`: `schreibe` oder `spreche` (bei `ziffernfolge` dazu `zahl`) |
 | `dreher`, `buendeln`, `schieben`, `stellenraetsel` | werden von `js/logik.js` erzeugt |
+| `paeckchen` | `zeilen: [{ a, op, b, luecke }]`, `op`: `+` oder `-`, `luecke`: `a`, `b` oder `c` (Ergebnis) |
+| `bildrechnung`, `legerechnen`, `aendert`, `denkzahl` | `a`, `op`, `b` |
+| `merkspruch` | `wie`: `H` oder `Z` |
+| `mauer`, `ergebnisballons`, `friedafehler` | werden von `js/logik.js` erzeugt |
 
-Die Formate ab `anzahlen` stehen in `js/uebungen-stellen.js`.
+Die Formate von `anzahlen` bis `stellenraetsel` stehen in `js/uebungen-stellen.js`,
+die ab `paeckchen` (Plus und Minus) in `js/uebungen-rechnen.js`.
 
 ## Abzeichen
 
-16 Abzeichen: 8 für die ganze Straße und je Haus 4 (Richtfest, zwei besondere, Goldhaus).
+20 Abzeichen: 8 für die ganze Straße und je Haus 4 (Richtfest, zwei besondere, Goldhaus).
 Sie werden in `js/abzeichen.js` allein aus den besten Sternen je Zimmer berechnet. Dafür wird nichts
 zusätzlich gespeichert. Die Lehrkraft-Ansicht zeigt die Anzahl je Kind.
 Mit jedem neuen Haus kommen 2 Abzeichen plus die aus seiner `abzeichen`-Liste dazu.
 
-Die Formate sind auf Zahlen bis 999 ausgelegt. Für andere Themen (z. B. Plus und Minus)
-kommen neue Formate dazu.
+Die Formate sind auf Zahlen bis 999 ausgelegt. Die Rechenformate aus Haus 11 sind für Aufgaben
+ohne Zehner- und Hunderterübergang gebaut und geprüft.
 
 Rechenprüfung: `node tests/aufgaben.test.js`
 

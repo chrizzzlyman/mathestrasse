@@ -7,6 +7,7 @@
   MH.HAUS_DATEIEN = [
     'haus9.js',
     'haus10.js',
+    'haus11.js',
   ];
 
   MH.haeuser = [];

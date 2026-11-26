@@ -295,9 +295,35 @@
       el('div', { class: 'gegend' },
         el('div', { class: 'huegel', html: Z.huegel() }),
         reihe, el('div', { class: 'gehweg' }), el('div', { class: 'fahrbahn' }))));
-    // auf schmalen Bildschirmen zum eigenen Haus schieben
+    // ist das eigene Haus nicht ganz zu sehen, wird die Straße dorthin geschoben
     const meins = reihe.children[MH.haeuser.indexOf(baustelle)];
-    reihe.scrollLeft = Math.max(0, meins.offsetLeft - reihe.offsetLeft - (reihe.clientWidth - meins.offsetWidth) / 2);
+    const links = meins.offsetLeft - reihe.offsetLeft;
+    if (links + meins.offsetWidth > reihe.clientWidth) {
+      reihe.scrollLeft = Math.max(0, links - (reihe.clientWidth - meins.offsetWidth) / 2);
+    }
+    strassenPfeile(reihe);
+  }
+
+  // Passen nicht alle Häuser nebeneinander, führen Pfeile weiter (mit der Maus kann man nicht wischen)
+  function strassenPfeile(reihe) {
+    const haeuser = reihe.querySelectorAll('button.grundstueck');
+    const pfeil = (richtung, seite, name) => el('button', {
+      type: 'button', class: 'knopf strassenpfeil ' + seite, 'aria-label': name,
+      html: MH.symbol(richtung < 0 ? 'zurueck' : 'weiter'),
+      onclick: () => reihe.scrollBy({ left: richtung * haeuser[0].offsetWidth, behavior: 'smooth' }),
+    });
+    const zurueck = pfeil(-1, 'links', 'Häuser weiter links ansehen');
+    const vor = pfeil(1, 'rechts', 'Häuser weiter rechts ansehen');
+    const zeige = () => {
+      const rahmen = reihe.getBoundingClientRect();
+      zurueck.hidden = haeuser[0].getBoundingClientRect().left >= rahmen.left - 12;
+      vor.hidden = haeuser[haeuser.length - 1].getBoundingClientRect().right <= rahmen.right + 12;
+    };
+    reihe.parentNode.append(zurueck, vor);
+    reihe.addEventListener('scroll', zeige, { passive: true });
+    window.addEventListener('resize', zeige);
+    MH.beimVerlassen(() => window.removeEventListener('resize', zeige));
+    zeige();
   }
 
   /* ---------- Im Haus ---------- */

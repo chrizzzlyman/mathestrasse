@@ -247,6 +247,31 @@
     return `<svg viewBox="0 0 48 48" aria-hidden="true">${inhalt}</svg>`;
   };
 
+  /* ---------- Liegendes Holzmaterial wie auf den „Lege und rechne“-Seiten ---------- */
+  const [HOLZ, HOLZ_HELL, HOLZ_DUNKEL, KERBE] = FARBEN.holz.H;
+  const linien = (d) => `<path d="${d}" stroke="${KERBE}" stroke-opacity=".55" stroke-width=".7" fill="none"/>`;
+  Z.liegend = (art) => {
+    if (art === 'H') {
+      let d = '';
+      for (let i = 1; i < 10; i++) {
+        d += `M${(13 - i * 1.2).toFixed(1)} ${1 + i * 2.4}h45M${(13 + i * 4.5).toFixed(1)} 1l-12 24`;
+      }
+      return `<svg class="liegend h" viewBox="0 0 60 31" aria-hidden="true">${
+        flaeche('13,1 58,1 46,25 1,25', HOLZ_HELL, `stroke="${HOLZ_DUNKEL}" stroke-width=".8"`)}${
+        flaeche('46,25 58,1 58,6 46,30', HOLZ_DUNKEL)}${rect(1, 25, 45, 5, HOLZ)}${linien(d)}</svg>`;
+    }
+    if (art === 'Z') {
+      let d = '';
+      for (let i = 1; i < 10; i++) d += `M${1 + i * 5} 6v8l4-4`;
+      return `<svg class="liegend z" viewBox="0 0 56 15" aria-hidden="true">${
+        flaeche('1,6 5,2 55,2 51,6', HOLZ_HELL)}${flaeche('51,6 55,2 55,10 51,14', HOLZ_DUNKEL)}${rect(1, 6, 50, 8, HOLZ)}${linien(d)}</svg>`;
+    }
+    return `<svg class="liegend e" viewBox="0 0 16 17" aria-hidden="true">${
+      flaeche('1,5 5,1 15,1 11,5', HOLZ_HELL)}${flaeche('11,5 15,1 15,12 11,16', HOLZ_DUNKEL)}${rect(1, 5, 10, 11, HOLZ)}</svg>`;
+  };
+  // Pfeil wie im Heft: „das wird weggenommen“
+  Z.pfeil = () => '<svg class="wegpfeil" viewBox="0 0 30 14" aria-hidden="true"><path d="M1 7h20" stroke="#17233f" stroke-width="3.4" stroke-linecap="round"/><path d="M18 1l11 6-11 6z" fill="#17233f"/></svg>';
+
   /* ---------- Geheimschrift: Quadrat = Hunderter, Strich = Zehner, Punkt = Einer ---------- */
   const GEHEIM = { H: '#249a2e', Z: '#b01d12', E: '#1672dc' };
   const zeichenBei = (art, x, y) => { // x, y = Mitte des Zeichens
@@ -285,7 +310,7 @@
   /* ---------- Abzeichen: Rosette mit Bild ---------- */
   Z.plakette = (bild, ring = 'gold') => {
     const [hell, dunkel] = {
-      gold: ['#ffd04d', '#d99a00'], rot: ['#ff7a6b', '#c4281a'], blau: ['#8fd6ff', '#2f8fc4'],
+      gold: ['#ffd04d', '#d99a00'], rot: ['#ff7a6b', '#c4281a'], blau: ['#8fd6ff', '#2f8fc4'], orange: ['#ffb067', '#e0661c'],
     }[ring] || ['#ffd04d', '#d99a00'];
     let zacken = '';
     for (let i = 0; i < 16; i++) {
