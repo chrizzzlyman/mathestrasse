@@ -102,8 +102,19 @@
    * Antippen ruft tippen() auf. Wird gezogen und auf einem Ziel (Selektor) losgelassen,
    * wird ablegen(ziel) aufgerufen. Tastatur (Enter) zählt als Antippen. */
   MH.ziehbar = (knopf, { ziele, tippen, ablegen }) => {
-    let start = null, geist = null, gezogen = false;
+    let start = null, geist = null, gezogen = false, markiert = null;
+    const zielBei = (ev) => {
+      const unter = document.elementFromPoint(ev.clientX, ev.clientY);
+      return unter && unter.closest(ziele);
+    };
+    const markiere = (ziel) => {
+      if (ziel === markiert) return;
+      if (markiert) markiert.classList.remove('drueber');
+      markiert = ziel;
+      if (markiert) markiert.classList.add('drueber');
+    };
     const ende = () => {
+      markiere(null);
       start = null;
       if (geist) geist.remove();
       geist = null;
@@ -131,14 +142,14 @@
       }
       geist.style.left = ev.clientX + 'px';
       geist.style.top = ev.clientY + 'px';
+      markiere(zielBei(ev));
     });
     knopf.addEventListener('pointerup', (ev) => {
       if (!start) return;
       const warGezogen = gezogen;
       ende();
       if (warGezogen) {
-        const unter = document.elementFromPoint(ev.clientX, ev.clientY);
-        const ziel = unter && unter.closest(ziele);
+        const ziel = zielBei(ev);
         if (ziel) ablegen(ziel);
       }
     });
@@ -146,7 +157,7 @@
     knopf.addEventListener('click', (ev) => {
       // nach dem Ziehen folgt oft noch ein Klick: der zählt nicht
       if (gezogen && ev.detail !== 0) { gezogen = false; return; }
-      tippen();
+      tippen(ev);
     });
   };
 })();

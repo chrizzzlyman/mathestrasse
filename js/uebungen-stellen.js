@@ -145,17 +145,17 @@
   };
 
   /* ---------- Geheimschrift lesen ---------- */
-  // Durcheinander gemalte Zeichen. Antippen blendet ab: „schon gezählt“.
-  const wirrFeld = (h, z, e) => {
+  // Durcheinander gemalte Zeichen. Zum Zählen blendet Antippen sie ab: „schon gezählt“.
+  const wirrFeld = (h, z, e, zaehlen = true) => {
     const arten = Z.arten(h, z, e);
     const plaetze = Z.streuung(arten.length);
     return el('div', { class: 'wirrfeld', role: 'group', 'aria-label': `Durcheinander: ${h} Quadrate, ${z} Striche, ${e} Punkte` },
       arten.map((art, i) => {
         const k = el('button', {
-          type: 'button', class: 'streu', 'data-art': art, 'aria-label': TEIL[art], 'aria-pressed': 'false',
+          type: 'button', class: 'streu', 'data-art': art, 'aria-label': TEIL[art], 'aria-pressed': zaehlen && 'false',
           style: `left:${plaetze[i].x}%;top:${plaetze[i].y}%`, html: Z.zeichen(art),
         });
-        k.addEventListener('click', () => k.setAttribute('aria-pressed', String(k.getAttribute('aria-pressed') !== 'true')));
+        if (zaehlen) k.addEventListener('click', () => k.setAttribute('aria-pressed', String(k.getAttribute('aria-pressed') !== 'true')));
         return k;
       }));
   };
@@ -190,29 +190,88 @@
   MH.auftraege.frage = () => 'Denk nach!';
   MH.vorlesetexte.frage = (a) => `${a.frage} ${a.antworten.join(' Oder: ')}`;
 
-  /* ---------- Aufräumen: Zeichen in die Stellentafel sortieren ---------- */
+  /* ---------- Aufräumen: Zeichen in die Stellentafel ziehen ---------- */
+  const FALSCHES_FELD = {
+    H: 'Das ist ein Quadrat. Quadrate sind Hunderter.',
+    Z: 'Das ist ein Strich. Striche sind Zehner.',
+    E: 'Das ist ein Punkt. Punkte sind Einer.',
+  };
+  const FELDNAME = { H: 'Feld Hunderter', Z: 'Feld Zehner', E: 'Feld Einer' };
+
   U.aufraeumen = (feld, a, api) => {
     const s = L.stellen(a.zahl);
     const haufen = {};
     const tafel = stellentafel((x) => (haufen[x] = el('div', { class: 'haufen' })));
-    const zimmer = wirrFeld(s.h, s.z, s.e);
+    tafel.classList.add('sortiertafel');
+    const spalten = [...tafel.children];
+    const zimmer = wirrFeld(s.h, s.z, s.e, false);
+    const hinweis = el('p', { class: 'tipp sortierhinweis', role: 'status' });
     const zweiter = el('div', { class: 'zweiter-schritt', hidden: true },
       el('p', { class: 'frage' }, 'Aufgeräumt! Wie heißt die Zahl?'),
       zahlAbfragen(api, a.zahl, { hinweis: (x) => ZAEHLTIPP[x] }));
     let uebrig = s.h + s.z + s.e;
+    let gewaehlt = null;   // nur für die Tastatur: erst Zeichen, dann Feld
+    const waehle = (k) => {
+      if (gewaehlt) gewaehlt.classList.remove('gewaehlt');
+      gewaehlt = k;
+      if (k) k.classList.add('gewaehlt');
+    };
+    const lege = (k, spalte) => {
+      if (!k.isConnected) return;
+      const x = spalte.dataset.stelle;
+      if (x !== k.dataset.art) {
+        api.vertan();
+        hinweis.textContent = FALSCHES_FELD[k.dataset.art];
+        wackeln(spalte);
+        return;
+      }
+      hinweis.textContent = '';
+      haufen[x].append(bild(Z.zeichen(x), 'stueck neu'));
+      waehle(null);
+      k.remove();
+      MH.ton('plopp');
+      if (--uebrig === 0) {
+        zimmer.hidden = true;
+        hinweis.hidden = true;
+        spalten.forEach((sp) => { sp.removeAttribute('tabindex'); sp.removeAttribute('role'); });
+        zweiter.hidden = false;
+        zweiter.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    };
     zimmer.querySelectorAll('.streu').forEach((k) => {
-      k.addEventListener('click', () => {
-        haufen[k.dataset.art].append(bild(Z.zeichen(k.dataset.art), 'stueck neu'));
-        k.remove();
-        MH.ton('plopp');
-        if (--uebrig === 0) {
-          zimmer.hidden = true;
-          zweiter.hidden = false;
-          zweiter.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        }
+      MH.ziehbar(k, {
+        ziele: '.sortiertafel .tafelspalte',
+        ablegen: (spalte) => lege(k, spalte),
+        tippen: (ev) => {
+          if (ev.detail !== 0) {   // Finger oder Maus: Antippen reicht nicht
+            hinweis.textContent = 'Nicht nur antippen: Ziehe das Zeichen in das richtige Feld.';
+            return;
+          }
+          waehle(k);
+          hinweis.textContent = 'Wähle jetzt das Feld H, Z oder E.';
+          spalten[0].focus();
+        },
       });
     });
-    feld.append(zimmer, tafel, zweiter);
+    spalten.forEach((sp) => {
+      sp.tabIndex = 0;
+      sp.setAttribute('role', 'button');
+      sp.setAttribute('aria-label', FELDNAME[sp.dataset.stelle]);
+      sp.addEventListener('keydown', (ev) => {
+        if ((ev.key !== 'Enter' && ev.key !== ' ') || !gewaehlt) return;
+        ev.preventDefault();
+        lege(gewaehlt, sp);
+        const naechstes = zimmer.querySelector('.streu');
+        if (!gewaehlt && naechstes && !zimmer.hidden) naechstes.focus();
+      });
+    });
+    feld.append(zimmer, hinweis, tafel, zweiter);
+    // Auf kleinen Bildschirmen so weit rollen, dass Zeichen und Felder gleichzeitig zu sehen sind.
+    const rollen = requestAnimationFrame(() => {
+      const ueberstand = tafel.getBoundingClientRect().bottom - window.innerHeight + 8;
+      if (ueberstand > 0) window.scrollBy(0, Math.min(ueberstand, zimmer.getBoundingClientRect().top - 8));
+    });
+    MH.beimVerlassen(() => cancelAnimationFrame(rollen));
   };
 
   /* ---------- Blitzblick ---------- */

@@ -575,6 +575,12 @@
           weiter.focus({ preventScroll: true });
           meldung.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         },
+        // zählt einen Fehler; den Hinweis zeigt die Übung selbst (ohne dass die Seite rollt)
+        vertan: () => {
+          versuche++;
+          fehler++;
+          MH.ton('falsch');
+        },
         falsch: (hinweis) => {
           versuche++;
           fehler++;

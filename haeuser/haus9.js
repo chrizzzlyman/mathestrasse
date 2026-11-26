@@ -68,7 +68,7 @@
             },
           },
           {
-            id: 'aufraeumen', bild: 'broom', titel: 'Aufräumen', auftrag: 'Räume auf! Tippe jedes Zeichen an.',
+            id: 'aufraeumen', bild: 'broom', titel: 'Aufräumen', auftrag: 'Räume auf! Ziehe jedes Zeichen in das richtige Feld.',
             aufgaben: () => je('aufraeumen', L.zahlen(4, { h: 5, z: 5, e: 7 })),
           },
           {
