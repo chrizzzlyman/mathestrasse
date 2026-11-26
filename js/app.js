@@ -275,7 +275,7 @@
             el('span', { style: 'display:contents', html: Z.haus({ nummer: haus.nummer, farbe: haus.farbe, stufe: stufe(haus) }) }),
             haus === baustelle && MH.tierBild(sitzung.gast ? null : sitzung.tier, 'maskottchen')),
           el('span', { class: 'namensschild' },
-            el('b', {}, haus.titel),
+            el('b', {}, haus.untertitel || haus.titel),
             el('span', { class: 'baubalken', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.round((n / von) * 100)}%` })),
             n === von
               ? el('span', { class: 'stand' }, el('img', { src: 'assets/bilder/trophy.svg', alt: '' }), 'Haus fertig!')

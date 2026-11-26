@@ -182,9 +182,9 @@ button.grundstueck { cursor: pointer; }
 .grundstueck .bild > svg { width: 100%; height: auto; }
 .grundstueck .maskottchen { --g: 66px; position: absolute; right: 2%; bottom: -8px; }
 button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transform: scale(1.04); }
-.grundstueck.leer { padding-bottom: calc(.9rem + 5.9rem); }
-.namensschild { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; width: min(100%, 270px); min-height: 5.9rem; margin-top: .35rem; background: var(--papier); border-radius: 20px; padding: .45rem .9rem .5rem; box-shadow: 0 6px 0 rgba(23, 35, 63, .18); border-top: 7px solid var(--akzent); }
-.namensschild b { font-family: var(--anzeige); font-size: 1.15rem; line-height: 1.2; }
+.grundstueck.leer { padding-bottom: calc(.9rem + 7.25rem); }
+.namensschild { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15rem; width: min(100%, 290px); min-height: 7.25rem; margin-top: .35rem; background: var(--papier); border-radius: 20px; padding: .45rem .9rem .5rem; box-shadow: 0 6px 0 rgba(23, 35, 63, .18); border-top: 7px solid var(--akzent); }
+.namensschild b { display: flex; align-items: center; justify-content: center; min-height: 2.4em; font-family: var(--anzeige); font-size: 1.05rem; line-height: 1.2; text-wrap: balance; }
 .namensschild .stand { display: inline-flex; align-items: center; gap: .35rem; font-size: .9rem; color: var(--leise); line-height: 1.2; }
 .stand img { width: 24px; height: 24px; }
 .baubalken { display: block; width: 100%; height: 12px; border-radius: 9px; background: var(--flaeche); box-shadow: inset 0 1px 3px rgba(23, 35, 63, .18); overflow: hidden; margin: .1rem 0; }
@@ -639,6 +639,10 @@ button.teilstueck.geist { position: fixed; z-index: 50; --platte: 46px; --stange
   .anmeldung { align-content: center; }
   .anmelde-haus { width: 290px; }
 }
+/* Etwas weniger Luft über dem Gruss, damit die zweizeiligen Schilder ohne Scrollen passen */
+@media (max-height: 860px) and (min-width: 700px) {
+  .gruss { padding-top: .75rem; }
+}
 /* Flache Bildschirme (Tablet quer): Straße ohne Scrollen */
 @media (max-height: 780px) and (min-width: 700px) {
   .gruss { padding-top: .6rem; }
@@ -649,8 +653,8 @@ button.teilstueck.geist { position: fixed; z-index: 50; --platte: 46px; --stange
   .fahrbahn::after { top: 29px; height: 6px; }
   .haeuserreihe { padding-top: 0; }
   .grundstueck { flex-basis: min(29vw, 38vh); padding-bottom: .5rem; }
-  .grundstueck.leer { padding-bottom: 5.5rem; }
-  .namensschild { min-height: 5rem; }
+  .grundstueck.leer { padding-bottom: 6.9rem; }
+  .namensschild { min-height: 6.4rem; }
 }
 /* Tablet quer: Aufgabe und Eingabe sollen ohne Scrollen auf den Bildschirm passen */
 @media (max-height: 860px) and (min-width: 700px) {
