@@ -61,6 +61,8 @@ Bekommt ein bestehendes Haus neue Zimmer, sind dort „Richtfest“ und „Goldh
   (`akzent`: Streifen an Karten, `rand`: Nummernschild, `schatten`: Seitenwand, `ring`: `rot`, `blau`, `orange`, `gold`).
 - Auf dem Schild an der Straße steht der Ich-Satz vom Deckblatt (`untertitel`, passt in zwei Zeilen,
   etwa 45 Zeichen). Der kurze `titel` erscheint in der Lehrkraft-Ansicht.
+- Material, das man bewegen kann, ziehen die Kinder selbst (`MH.ziehbar`); Antippen allein reicht dann nicht.
+  Verwandlungen (z. B. Bündeln) sind Schritt für Schritt zu sehen.
 - Jedem Zimmer ein `bild` geben (siehe README).
 - Zwei besondere Abzeichen über `abzeichen` in der Haus-Datei festlegen.
 - Neue Bildschirme in Handy-, Tablet- (quer: ohne Scrollen bis „Prüfen“) und sehr breiter Größe ansehen:

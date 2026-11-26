@@ -377,7 +377,7 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
 .kaestchen.aktiv { border-color: var(--sonne-tief); background: #fff8dc; box-shadow: 0 0 0 4px rgba(255, 197, 49, .4); }
 .kaestchen.falsch { border-style: dashed; border-color: #ef8d83; background: #ffe4e0; }
 .kaestchen.richtig { border-color: #5cc46c; background: var(--gut-hell); cursor: default; }
-.kaestchen:focus-visible, .streu:focus-visible, .haufen.schiebe:focus-visible { outline: 4px solid #7b3fe4; outline-offset: 3px; }
+.kaestchen:focus-visible, .streu:focus-visible, .plaettchen:focus-visible { outline: 4px solid #7b3fe4; outline-offset: 3px; }
 .tasten { display: grid; grid-template-columns: repeat(6, minmax(0, 58px)); gap: .6rem; justify-content: center; width: 100%; }
 .tasten .knopf.ziffer { min-width: 0; padding: 0; font-size: 1.5rem; }
 
@@ -466,13 +466,35 @@ button.grundstueck:hover .bild, button.grundstueck:focus-visible .bild { transfo
 
 .hoerknopf { font-size: 1.4rem; min-height: 68px; padding-inline: 1.8em; }
 
-.haufen.schiebe { flex: 0 0 auto; width: 100%; font: inherit; border: 0; background: transparent; cursor: pointer; min-height: 150px; gap: 8px; touch-action: manipulation; }
-.haufen.schiebe:hover:not(:disabled) { background: var(--flaeche); }
-.haufen.schiebe:disabled { cursor: default; }
-.haufen.schiebe.genommen { background: #fff8dc; box-shadow: inset 0 0 0 4px var(--sonne); }
-.plaettchen { flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7d8bb0, #25345c 70%); box-shadow: 0 2px 0 #111b36; pointer-events: none; }
-.plaettchen.hoch { translate: 0 -7px; background: radial-gradient(circle at 35% 30%, #fff3a8, var(--sonne) 70%); box-shadow: 0 9px 0 rgba(23, 35, 63, .2); }
+/* Plättchen schieben: jedes Plättchen lässt sich ziehen */
+.schiebetafel .haufen { min-height: 150px; gap: 9px; }
+.schiebetafel .tafelspalte.drueber { background: #fff3bf; box-shadow: inset 0 0 0 5px var(--sonne); }
+.schiebetafel .tafelspalte:focus-visible { outline: 4px solid #7b3fe4; outline-offset: -4px; }
+.plaettchen { flex: 0 0 auto; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #7d8bb0, #25345c 70%); box-shadow: 0 3px 0 #111b36; }
+.plaettchen.ziehbar { touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.plaettchen:disabled { cursor: default; opacity: 1; }
 .plaettchen.gewandert { background: radial-gradient(circle at 35% 30%, #fff3a8, var(--sonne) 70%); box-shadow: 0 4px 0 var(--sonne-tief); animation: aufploppen .4s cubic-bezier(.3, 1.8, .5, 1); }
+.plaettchen.gewaehlt { outline: 4px solid #7b3fe4; outline-offset: 2px; }
+.plaettchen.wird-gezogen { opacity: .25; }
+.plaettchen.geist { position: fixed; z-index: 50; margin: 0; transform: translate(-50%, -50%) scale(1.3); pointer-events: none; animation: none; }
+.loch { flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%; border: 3px dashed #aab3c6; }
+.schiebehinweis { min-height: 1.5em; margin: -.4rem 0; }
+
+/* Bündeln: die Bühne für den Film liegt über der Stellentafel */
+.werkbank { position: relative; width: min(100%, 520px); }
+.werkbank .tafel { width: 100%; }
+.buendelbuehne { position: absolute; left: 0; right: 0; top: 0; height: max(100%, 250px); z-index: 4; border-radius: 18px; background: rgba(255, 255, 255, .94); box-shadow: var(--schatten); scroll-margin: .5rem; transition: background-color .6s, box-shadow .6s; animation: einblenden .35s; }
+.buendelteil { position: absolute; display: block; border-radius: 50%; background: #1672dc; transition: left .6s ease-in-out, top .6s ease-in-out, width .6s ease-in-out, height .6s ease-in-out, background-color .8s, border-radius .6s; }
+.buendelbuehne[data-von='Z'] .buendelteil { border-radius: 3px; background: #b01d12; }
+.buendelbuehne.verwandelt .buendelteil { border-radius: 0; background: #b01d12; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .75); }
+.buendelbuehne[data-von='Z'].verwandelt .buendelteil { background: #249a2e; }
+.buendelbuehne[data-von='E'].verwandelt .buendelteil:first-of-type { border-radius: 8px 0 0 8px; }
+.buendelbuehne[data-von='E'].verwandelt .buendelteil:last-of-type { border-radius: 0 8px 8px 0; }
+.buendelsatz { position: absolute; left: .5rem; right: .5rem; bottom: .6rem; margin: 0; font-family: var(--anzeige); font-weight: 800; font-size: 1.5rem; line-height: 1.2; }
+.buendelbuehne.unterwegs { background: rgba(255, 255, 255, 0); box-shadow: none; }
+.buendelbuehne.unterwegs .buendelsatz { visibility: hidden; }
+.ruht { opacity: .45; pointer-events: none; }
+@keyframes einblenden { from { opacity: 0; } }
 .knopf.buendler { font-size: 1.05rem; }
 
 .wortfeld { width: min(100%, 520px); font: 700 1.5rem/1.3 var(--zahl); color: var(--tinte); text-align: center; padding: .6rem .8rem; border: 3px solid #aab5d4; border-radius: 18px; background: var(--papier); }
@@ -677,7 +699,7 @@ button.teilstueck.geist { position: fixed; z-index: 50; --platte: 46px; --stange
   .tafelkopf { font-size: 1.25rem; }
   .tafelziffer { min-height: 2.6rem; font-size: 1.9rem; }
   .haufen { min-height: 70px; padding-block: .35rem; }
-  .haufen.schiebe { min-height: 104px; }
+  .schiebetafel .haufen { min-height: 150px; gap: 7px; }
   .tafelfuss { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: .35rem; padding-bottom: .5rem; }
   .tafelfuss .tafelziffer { flex-basis: 100%; min-height: 2rem; font-size: 1.6rem; }
   .tafelfuss .knopf { width: auto; min-width: 56px; }
@@ -754,8 +776,9 @@ button.teilstueck.geist { position: fixed; z-index: 50; --platte: 46px; --stange
   .haufen .gz, .tafelfuss .gz { width: 20px; height: 20px; }
   .haufen .gz.z, .tafelfuss .gz.z { width: 28px; }
   .haufen { gap: 3px; }
-  .haufen.schiebe { gap: 6px; }
-  .plaettchen { width: 23px; height: 23px; }
+  .schiebetafel .haufen { gap: 6px; }
+  .plaettchen, .loch { width: 34px; height: 34px; }
+  .buendelsatz { font-size: 1.2rem; }
   .knopf.buendler { font-size: .95rem; }
   .stempelkasten { gap: .45rem; }
   .verbindespalten { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1.15fr) minmax(0, .55fr); gap: .35rem; }

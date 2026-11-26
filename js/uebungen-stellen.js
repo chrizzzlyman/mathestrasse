@@ -555,89 +555,226 @@
   };
 
   /* ---------- Bündel-Werkstatt ---------- */
+  /* Beim Bündeln läuft ein kleiner Film: 10 Zeichen verlassen nacheinander ihre Spalte, stellen sich auf,
+   * wachsen zusammen und wandern als ein Zeichen in die nächste Spalte.
+   * Bewegt wird nur über CSS-Übergänge. Bei „Bewegung reduzieren“ sieht man dieselben Schritte ohne Fahrten. */
+  const BUENDEL = {
+    E: { nach: 'Z', satz: '10 Einer sind 1 Zehner.' },
+    Z: { nach: 'H', satz: '10 Zehner sind 1 Hunderter.' },
+  };
+
+  // Lage eines Zeichens auf dem Bildschirm, bezogen auf die Bühne: Mitte, Breite, Höhe der Farbe
+  const form = (stueck, art, buehne) => {
+    const r = stueck.querySelector('svg').getBoundingClientRect(), o = buehne.getBoundingClientRect();
+    const mitte = { x: r.left + r.width / 2 - o.left, y: r.top + r.height / 2 - o.top };
+    if (art === 'E') return Object.assign(mitte, { b: r.width * 17 / 28, h: r.height * 17 / 28 });
+    if (art === 'Z') return Object.assign(mitte, { b: r.width * 32 / 36, h: r.height * 6 / 28 });
+    return Object.assign(mitte, { b: r.width * 26.5 / 28, h: r.height * 26.5 / 28 });
+  };
+  const setze = (teil, f) => Object.assign(teil.style, { left: `${f.x - f.b / 2}px`, top: `${f.y - f.h / 2}px`, width: `${f.b}px`, height: `${f.h}px` });
+
+  function buendelFilm({ von, werkbank, quellen, umraeumen, fertig }) {
+    const { nach, satz } = BUENDEL[von];
+    const uhren = [];
+    const spaeter = (ms, f) => uhren.push(setTimeout(f, ms));
+    MH.beimVerlassen(() => uhren.forEach(clearTimeout));
+
+    const text = el('p', { class: 'buendelsatz', role: 'status' });
+    const buehne = el('div', { class: 'buendelbuehne', 'data-von': von }, text);
+    werkbank.append(buehne);
+    // bei kleinen Tafeln so weit rollen, dass die ganze Bühne zu sehen ist
+    buehne.scrollIntoView({ block: 'nearest' });
+
+    const breite = buehne.clientWidth, hoehe = buehne.clientHeight;
+    const mx = breite / 2, my = (hoehe - 48) / 2;
+    // Einer stellen sich nebeneinander auf (Stange), Zehner untereinander (Platte)
+    const d = Math.min(34, (breite - 20) / 12.7);
+    const kante = Math.min(170, breite * 0.6, hoehe - 70);
+    const aufgestellt = (i) => (von === 'E'
+      ? { x: mx + (i - 4.5) * d * 1.3, y: my, b: d, h: d }
+      : { x: mx, y: my + (i - 4.5) * kante / 10, b: kante, h: kante / 13 });
+    const zusammen = (i) => (von === 'E'
+      ? { x: mx + (i - 4.5) * d, y: my, b: d, h: d }
+      : { x: mx, y: my + (i - 4.5) * kante / 10, b: kante, h: kante / 10 });
+
+    const teile = quellen.map((q) => {
+      const teil = el('i', { class: 'buendelteil' });
+      setze(teil, form(q, von, buehne));
+      return teil;
+    });
+    buehne.append(...teile);
+    quellen.forEach((q) => { q.style.visibility = 'hidden'; });
+
+    // 1. eines nach dem anderen aufstellen und mitzählen
+    teile.forEach((teil, i) => spaeter(350 + i * 230, () => {
+      setze(teil, aufgestellt(i));
+      text.textContent = `${i + 1} ${WORT[von]}`;
+      MH.ton('plopp');
+    }));
+    // 2. zusammenrücken
+    spaeter(3200, () => { teile.forEach((teil, i) => setze(teil, zusammen(i))); buehne.classList.add('dicht'); });
+    // 3. verwandeln: aus 10 Teilen wird eine Stange oder Platte (die 10 Teile bleiben erkennbar)
+    spaeter(4100, () => { buehne.classList.add('verwandelt'); text.textContent = satz; MH.ton('plopp'); });
+    // 4. als ein Zeichen in die nächste Spalte wandern
+    spaeter(6100, () => {
+      const ziel = umraeumen();
+      ziel.style.visibility = 'hidden';
+      buehne.classList.add('unterwegs');
+      const f = form(ziel, nach, buehne);
+      teile.forEach((teil, i) => setze(teil, nach === 'Z'
+        ? { x: f.x + (i - 4.5) * f.b / 10, y: f.y, b: f.b / 10, h: f.h }
+        : { x: f.x, y: f.y + (i - 4.5) * f.h / 10, b: f.b, h: f.h / 10 }));
+      spaeter(900, () => {
+        buehne.remove();
+        ziel.style.visibility = '';
+        ziel.classList.add('neu');
+        fertig();
+      });
+    });
+  }
+
   U.buendeln = (feld, a, api) => {
     const hat = { H: a.h, Z: a.z, E: a.e };
-    let fertig = false;
+    let fertig = false, laeuft = false;
     const haufen = {};
     const tafel = stellentafel((s) => (haufen[s] = el('div', { class: 'haufen' })));
-    const buendle = (von, nach) => {
-      hat[von] -= 10;
-      hat[nach] += 1;
-      MH.ton('plopp');
-      zeige();
-      haufen[nach].lastChild.classList.add('neu');
+    const werkbank = el('div', { class: 'werkbank' }, tafel);
+    const buendle = (von) => {
+      if (fertig || laeuft || hat[von] < 10) return;
+      laeuft = true;
+      api.ruhe();
+      einer.disabled = zehner.disabled = true;
+      ruhe(true);
+      const nach = BUENDEL[von].nach;
+      buendelFilm({
+        von, werkbank,
+        quellen: Array.from(haufen[von].children).slice(-10),
+        umraeumen: () => {
+          hat[von] -= 10;
+          hat[nach] += 1;
+          zeige();
+          return haufen[nach].lastChild;
+        },
+        fertig: () => { laeuft = false; zeige(); ruhe(false); },
+      });
     };
-    const einer = knopf('Bündle 10 Einer', () => buendle('E', 'Z'), 'buendler');
-    const zehner = knopf('Bündle 10 Zehner', () => buendle('Z', 'H'), 'buendler');
+    const einer = knopf('Bündle 10 Einer', () => buendle('E'), 'buendler');
+    const zehner = knopf('Bündle 10 Zehner', () => buendle('Z'), 'buendler');
     const zeige = () => {
       STELLEN.forEach((s) => haufen[s].replaceChildren(...zeichenHaufen(s, hat[s])));
-      einer.disabled = fertig || hat.E < 10;
-      zehner.disabled = fertig || hat.Z < 10;
+      einer.disabled = fertig || laeuft || hat.E < 10;
+      zehner.disabled = fertig || laeuft || hat.Z < 10;
     };
-    feld.append(tafel, el('div', { class: 'wortwahl' }, einer, zehner),
-      ...zahlAbfragen(api, a.zahl, {
-        hinweis: () => (hat.E > 9 || hat.Z > 9
-          ? 'In jede Spalte passt nur eine Ziffer. Bündle zuerst!'
-          : 'Zähle jetzt noch einmal: Quadrate, Striche, Punkte.'),
-        satz: `${a.h} Hunderter, ${a.z} Zehner, ${a.e} Einer sind zusammen ${a.zahl}.`,
-        danach: () => { fertig = true; zeige(); },
-      }));
+    const abfrage = zahlAbfragen(api, a.zahl, {
+      hinweis: () => (hat.E > 9 || hat.Z > 9
+        ? 'In jede Spalte passt nur eine Ziffer. Bündle zuerst!'
+        : 'Zähle jetzt noch einmal: Quadrate, Striche, Punkte.'),
+      satz: `${a.h} Hunderter, ${a.z} Zehner, ${a.e} Einer sind zusammen ${a.zahl}.`,
+      danach: () => { fertig = true; zeige(); },
+    });
+    // während des Films ruht die Eingabe
+    const ruhe = (an) => abfrage.forEach((k) => { k.inert = an; k.classList.toggle('ruht', an); });
+    feld.append(werkbank, el('div', { class: 'wortwahl' }, einer, zehner), ...abfrage);
     zeige();
   };
 
   /* ---------- Plättchen schieben ---------- */
+  const NUR_EINES = 'Nur 1 Plättchen darf wandern. Schiebe das gelbe weiter oder tippe auf „Zurücklegen“.';
+
   U.schieben = (feld, a, api) => {
     const start = { H: a.h, Z: a.z, E: a.e };
-    let zug = null;      // { von, nach } – immer höchstens ein verschobenes Plättchen
-    let genommen = null; // Spalte, aus der gerade eines in der Hand ist
+    let lage = Object.assign({}, start); // höchstens ein Plättchen ist gewandert
+    let gewaehlt = null;                 // nur für die Tastatur: erst Plättchen, dann Spalte
     let fertig = false;
     const haufen = {};
-    const jetzt = () => {
-      const w = Object.assign({}, start);
-      if (zug) { w[zug.von]--; w[zug.nach]++; }
-      return w;
-    };
+    const wanderung = (w) => STELLEN.reduce((n, s) => n + Math.abs(w[s] - start[s]), 0) / 2;
+    const zug = () => (wanderung(lage)
+      ? { von: STELLEN.find((s) => lage[s] < start[s]), nach: STELLEN.find((s) => lage[s] > start[s]) }
+      : null);
     const anzeige = el('div', { class: 'karte grosszahl', 'aria-live': 'polite' });
-    const hinweis = el('p', { class: 'tipp' });
-    const nimm = (s) => { genommen = s; MH.ton('plopp'); zeige(); };
-    const lege = (nach) => {
-      const von = genommen;
-      genommen = null;
-      if (von && von !== nach && start[nach] < 9) { zug = { von, nach }; MH.ton('plopp'); }
+    const hinweis = el('p', { class: 'tipp schiebehinweis', role: 'status' });
+    const anleitung = () => (zug()
+      ? 'Passt die Zahl? Dann tippe auf „Prüfen“.'
+      : 'Ziehe 1 Plättchen in eine andere Spalte.');
+
+    const schiebe = (von, nach) => {
+      if (fertig || von === nach) return false;
+      const neu = Object.assign({}, lage);
+      neu[von] -= 1;
+      neu[nach] += 1;
+      if (wanderung(neu) > 1 || neu[nach] > 9) {
+        hinweis.textContent = neu[nach] > 9 ? 'In eine Spalte passen höchstens 9 Plättchen.' : NUR_EINES;
+        wackeln(tafel);
+        return false;
+      }
+      lage = neu;
+      gewaehlt = null;
+      MH.ton('plopp');
       zeige();
+      return true;
     };
-    const tippe = (s) => {
-      if (fertig) return;
-      if (genommen) return lege(s);
-      // nach einem Zug fängt das nächste Antippen wieder bei der Ausgangslage an
-      if (zug) zug = null;
-      if (start[s]) nimm(s); else zeige();
-    };
-    const zeige = () => {
-      const w = jetzt();
-      STELLEN.forEach((s) => {
-        haufen[s].replaceChildren(...Array.from({ length: w[s] }, (_, i) => el('span', {
-          class: 'plaettchen' + (genommen === s && i === w[s] - 1 ? ' hoch' : '') + (zug && zug.nach === s && i === w[s] - 1 ? ' gewandert' : ''),
-        })));
-        haufen[s].setAttribute('aria-label', `${WORT[s]}: ${w[s]} Plättchen`);
-        haufen[s].disabled = fertig;
-        haufen[s].classList.toggle('genommen', genommen === s);
+
+    const plaettchen = (s, gewandert) => {
+      const p = el('button', {
+        type: 'button', class: 'plaettchen' + (gewandert ? ' gewandert' : ''), 'data-stelle': s,
+        'aria-label': `Plättchen bei den ${WORT[s]}n`, disabled: fertig,
       });
-      anzeige.textContent = L.zahl(w.H, w.Z, w.E);
-      hinweis.textContent = genommen ? 'Wohin damit? Tippe auf eine andere Spalte.' : 'Tippe auf die Spalte, aus der ein Plättchen wandern soll.';
-      pruefe.disabled = fertig || !zug;
-      zurueck.disabled = fertig || (!zug && !genommen);
+      MH.ziehbar(p, {
+        ziele: '.schiebetafel .tafelspalte',
+        ablegen: (spalte) => schiebe(s, spalte.dataset.stelle),
+        tippen: (ev) => {
+          if (ev.detail !== 0) {   // Finger oder Maus: Antippen reicht nicht
+            hinweis.textContent = 'Nicht nur antippen: Ziehe das Plättchen in eine andere Spalte.';
+            return;
+          }
+          feld.querySelectorAll('.plaettchen.gewaehlt').forEach((x) => x.classList.remove('gewaehlt'));
+          gewaehlt = p;
+          p.classList.add('gewaehlt');
+          hinweis.textContent = 'Wähle jetzt die Spalte H, Z oder E.';
+          spalten[STELLEN.indexOf(s)].focus();
+        },
+      });
+      return p;
     };
-    const tafel = stellentafel((s) => (haufen[s] = el('button', { type: 'button', class: 'haufen schiebe', 'data-art': s, onclick: () => tippe(s) })));
-    const zurueck = knopf('Zurücklegen', () => { zug = null; genommen = null; zeige(); }, 'klein');
+
+    const zeige = () => {
+      const z = zug();
+      STELLEN.forEach((s) => {
+        const reihe = Array.from({ length: lage[s] }, (_, i) => plaettchen(s, !!z && z.nach === s && i === lage[s] - 1));
+        if (z && z.von === s) reihe.push(el('span', { class: 'loch', 'aria-hidden': 'true' }));
+        haufen[s].replaceChildren(...reihe);
+        haufen[s].setAttribute('aria-label', `${WORT[s]}: ${lage[s]} Plättchen`);
+      });
+      anzeige.textContent = L.zahl(lage.H, lage.Z, lage.E);
+      hinweis.textContent = fertig ? '' : anleitung();
+      pruefe.disabled = fertig || !z;
+      zurueck.disabled = fertig || !z;
+    };
+
+    const tafel = stellentafel((s) => (haufen[s] = el('div', { class: 'haufen', role: 'group' })));
+    tafel.classList.add('schiebetafel');
+    const spalten = [...tafel.children];
+    spalten.forEach((sp) => {
+      sp.tabIndex = 0;
+      sp.setAttribute('aria-label', FELDNAME[sp.dataset.stelle]);
+      sp.addEventListener('keydown', (ev) => {
+        if (ev.target !== sp || (ev.key !== 'Enter' && ev.key !== ' ') || !gewaehlt) return;
+        ev.preventDefault();
+        const nach = sp.dataset.stelle;
+        if (schiebe(gewaehlt.dataset.stelle, nach)) {
+          const neu = haufen[nach].querySelector('.gewandert') || haufen[nach].querySelector('.plaettchen');
+          if (neu) neu.focus();
+        }
+      });
+    });
+    const zurueck = knopf('Zurücklegen', () => { lage = Object.assign({}, start); gewaehlt = null; zeige(); }, 'klein');
     const pruefe = pruefKnopf(() => {
-      const w = jetzt();
-      const n = L.zahl(w.H, w.Z, w.E);
+      const n = L.zahl(lage.H, lage.Z, lage.E);
+      const z = zug();
       if (n === a.soll) {
         fertig = true;
         zeige();
-        hinweis.textContent = '';
-        api.richtig(`Aus ${L.zahl(a.h, a.z, a.e)} wird ${n}. Ein Plättchen ist von den ${WORT[zug.von]}n zu den ${WORT[zug.nach]}n gewandert.`);
+        api.richtig(`Aus ${L.zahl(a.h, a.z, a.e)} wird ${n}. Ein Plättchen ist von den ${WORT[z.von]}n zu den ${WORT[z.nach]}n gewandert.`);
         return;
       }
       wackeln(tafel);
