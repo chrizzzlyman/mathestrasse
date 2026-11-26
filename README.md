@@ -25,11 +25,28 @@ Der Schlüssel in `js/config.js` darf öffentlich sein. Den *secret*- oder *serv
 4. Diese Zeile im Supabase-Dashboard unter *SQL Editor* ausführen, dann „Erledigt, neu prüfen“.
 5. Reiter *Kinder und QR-Karten*: Kinder anlegen, Karten **von der veröffentlichten Seite aus** drucken.
 
+Für eine ganz neue Datenbank werden vorher `supabase/schema.sql` und danach `supabase/zeitlimit.sql`
+einmal im *SQL Editor* ausgeführt. Im Projekt `mathehaeuser` ist beides schon geschehen.
+
+## Tägliches Zeitlimit
+
+Einstellen: `lehrkraft.html` → Reiter *Zeitlimit*. Es gilt für jedes Kind pro Tag, auf allen Geräten.
+
+- Zwei Minuten vor Schluss kommt ein Hinweis, danach meldet sich die App ab. Weiter geht es am nächsten Tag.
+- Wahlweise darf ein angefangenes Zimmer noch beendet werden (höchstens 3 Minuten länger).
+- Gezählt wird nur, solange die App zu sehen ist und in den letzten 3 Minuten berührt wurde.
+- Ohne Netz zählt das Gerät selbst weiter und meldet die Zeit später.
+- Mit Limit gibt es kein „Ohne Anmeldung ausprobieren“.
+- `index.html?ansehen` („Alle Zimmer ansehen“) ist nicht begrenzt.
+- Das Limit hilft beim Maßhalten, ist aber keine unüberwindbare Sperre
+  (z. B. kann man am Gerät selbst Datum oder gespeicherte Daten verstellen).
+
 ## Nach dem ersten Veröffentlichen prüfen
 
 - Ein Test-Kind anlegen, QR-Karte mit dem Tablet scannen.
 - Ein Zimmer lösen: Unten steht „Gespeichert“.
 - In der Lehrkraft-Ansicht erscheinen die Sterne.
+- Zeitlimit auf 3 Minuten stellen, mit dem Test-Kind üben, bis die App sich abmeldet. Danach wieder zurückstellen.
 - Test-Kind wieder löschen.
 
 ## Ein neues Mathehaus bauen
@@ -83,7 +100,8 @@ Rechenprüfung: `node tests/aufgaben.test.js`
 
 ## Datenschutz und Betrieb
 
-- Gespeichert werden Tier + Zahl, ein geheimer QR-Schlüssel und die Ergebnisse. Keine Namen.
+- Gespeichert werden Tier + Zahl, ein geheimer QR-Schlüssel, die Ergebnisse und für das Zeitlimit die
+  heute genutzten Sekunden (ältere Tage werden beim nächsten Üben gelöscht). Keine Namen.
   Notizen in der Lehrkraft-Ansicht bleiben im Browser.
 - Weil du Tier und Zahl Kindern zuordnen kannst, sind es dennoch personenbezogene (pseudonyme) Daten.
   Bitte mit der Schule klären (u. a. Vertrag zur Auftragsverarbeitung mit Supabase).

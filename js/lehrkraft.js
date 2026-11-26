@@ -15,6 +15,7 @@
   let hausNummer = null;
   let kinder = [];
   let durchgaenge = [];
+  let einstellung = null;   // Zeitlimit; null = Datenbank kennt es nicht oder war nicht erreichbar
 
   const knopf = (text, tun, klasse = '') => el('button', { type: 'button', class: 'knopf klein ' + klasse, onclick: tun }, text);
   const setze = (...inhalt) => wurzel.replaceChildren(...inhalt.filter(Boolean));
@@ -70,6 +71,8 @@
       alle('durchgaenge', 'id,kind_id,haus,raum,sterne,fehler,dauer_s,einschaetzung,erstellt_am'),
     ]);
     kinder.sort((a, b) => kennung(a).localeCompare(kennung(b), 'de'));
+    const { data, error } = await db.from('einstellungen').select('tageslimit_min,zimmer_beenden');
+    einstellung = !error && data && data.length ? data[0] : null;
   }
 
   async function starte() {
@@ -271,6 +274,64 @@
         karten) : null);
   }
 
+  /* ---------- Zeitlimit ---------- */
+  function zeitlimit() {
+    if (!einstellung) {
+      return el('div', { class: 'lk-karte' },
+        el('h2', {}, 'Tägliches Zeitlimit'),
+        el('p', {}, 'Die Einstellung konnte nicht geladen werden. Wurde supabase/zeitlimit.sql im SQL Editor ausgeführt?'),
+        knopf('Neu laden', async () => { await lade(); zeige(); }, 'haupt'));
+    }
+    const zurzeit = () => (einstellung.tageslimit_min
+      ? `Zurzeit gilt: ${einstellung.tageslimit_min} Minuten pro Kind und Tag.`
+      : 'Zurzeit gilt: kein Limit.');
+    const an = el('input', { type: 'checkbox', id: 'limit-an', checked: einstellung.tageslimit_min !== null });
+    const minuten = el('input', { type: 'number', id: 'minuten', min: 1, max: 240, inputmode: 'numeric', value: einstellung.tageslimit_min || 20 });
+    const beenden = el('input', { type: 'checkbox', id: 'beenden', checked: einstellung.zimmer_beenden });
+    const passeAn = () => { minuten.disabled = beenden.disabled = !an.checked; };
+    an.addEventListener('change', passeAn);
+    passeAn();
+    const stand = el('p', { class: 'zurzeit' }, zurzeit());
+    const meldung = el('p', { class: 'meldung', role: 'status' });
+    const melde = (art, text) => { meldung.className = 'meldung ' + art; meldung.textContent = text; };
+    const speichern = el('button', { type: 'submit', class: 'knopf klein haupt' }, 'Speichern');
+
+    const form = el('form', { class: 'lk-karte zeitform', novalidate: true },
+      el('h2', {}, 'Tägliches Zeitlimit'),
+      stand,
+      el('label', { class: 'hakenzeile' }, an, el('span', {}, 'Nutzungszeit pro Tag begrenzen')),
+      el('div', { class: 'leiste' }, el('label', { for: 'minuten' }, 'Minuten pro Kind und Tag'), minuten),
+      el('label', { class: 'hakenzeile' }, beenden, el('span', {}, 'Ein angefangenes Zimmer darf noch beendet werden (höchstens 3 Minuten länger)')),
+      speichern,
+      meldung,
+      el('ul', { class: 'klein' },
+        el('li', {}, 'Ist die Zeit um, meldet sich die App ab. Weiter geht es erst am nächsten Tag. Zwei Minuten vorher kommt ein Hinweis.'),
+        el('li', {}, 'Gezählt wird nur, solange die App zu sehen ist und benutzt wird.'),
+        el('li', {}, 'Mit Limit gibt es kein „Ohne Anmeldung ausprobieren“. „Alle Zimmer ansehen“ bleibt unbegrenzt.'),
+        el('li', {}, 'Änderungen erreichen auch angemeldete Geräte innerhalb einer Minute.')));
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const n = Number(minuten.value);
+      if (an.checked && (!Number.isInteger(n) || n < 1 || n > 240)) {
+        melde('nochmal', 'Bitte eine ganze Zahl von 1 bis 240 eingeben.');
+        return;
+      }
+      const neu = { tageslimit_min: an.checked ? n : null, zimmer_beenden: beenden.checked };
+      speichern.disabled = true;
+      const { data, error } = await db.from('einstellungen').update(neu).eq('id', true).select('tageslimit_min,zimmer_beenden');
+      speichern.disabled = false;
+      if (error || !data || !data.length) {
+        melde('nochmal', 'Speichern nicht möglich' + (error ? ': ' + fehlertext(error) : '.'));
+        return;
+      }
+      einstellung = data[0];
+      stand.textContent = zurzeit();
+      melde('gut', 'Gespeichert.');
+    });
+    return form;
+  }
+
   function zeige() {
     const tab = (id, text) => el('button', {
       type: 'button', class: 'knopf klein', 'aria-pressed': String(reiter === id),
@@ -282,9 +343,10 @@
         el('div', { class: 'kopf-rechts' },
           tab('fortschritt', 'Fortschritt'),
           tab('kinder', 'Kinder und QR-Karten'),
+          tab('zeit', 'Zeitlimit'),
           el('a', { href: 'index.html?ansehen', target: '_blank', rel: 'noopener' }, 'Alle Zimmer ansehen'),
           knopf('Abmelden', abmelden))),
-      el('main', { class: 'lk-inhalt' }, reiter === 'fortschritt' ? fortschritt() : kinderVerwalten()));
+      el('main', { class: 'lk-inhalt' }, { fortschritt, kinder: kinderVerwalten, zeit: zeitlimit }[reiter]()));
   }
 
   MH.ladeHaeuser().then(starte);

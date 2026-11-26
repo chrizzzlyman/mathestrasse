@@ -60,3 +60,11 @@ body.lk #app { display: block; }
   @page { margin: 10mm; }
 }
 .lk td.abzeichenzahl { font-weight: 700; cursor: help; }
+.zeitform { max-width: 600px; margin: 0 auto 1.2rem; display: flex; flex-direction: column; align-items: flex-start; gap: .8rem; }
+.zeitform h2, .zeitform p, .zeitform .leiste { margin: 0; }
+.zeitform ul { color: var(--leise); }
+.zeitform .zurzeit { font-family: var(--anzeige); font-weight: 800; font-size: 1.1rem; }
+.zeitform .meldung:empty { display: none; }
+.hakenzeile { display: flex; align-items: flex-start; gap: .65rem; cursor: pointer; }
+.lk .hakenzeile input { flex: 0 0 1.3rem; width: 1.3rem; height: 1.3rem; margin: .1rem 0 0; }
+.lk input:disabled { opacity: .45; }

@@ -94,6 +94,8 @@ img { max-width: 100%; }
 .knopf.rund { padding: 0; width: 44px; border-radius: 50%; }
 .knopf.leise { background: transparent; border-color: transparent; box-shadow: none; color: var(--leise); text-decoration: underline; text-underline-offset: 4px; }
 .knopf.leise:hover:not(:disabled) { background: var(--flaeche); }
+.knopf[hidden] { display: none; }
+.zeitband { position: fixed; top: .55rem; left: 50%; transform: translateX(-50%); z-index: 60; width: max-content; max-width: min(92vw, 34rem); padding: .6rem 1.2rem; text-align: center; font-family: var(--anzeige); font-weight: 800; background: var(--papier); border: 4px solid var(--sonne); border-radius: 18px; box-shadow: var(--schatten); pointer-events: none; }
 .knopf.richtig, .knopf.richtig:disabled { background: var(--gut-hell); border-color: #5cc46c; box-shadow: 0 5px 0 #3da34f; opacity: 1; }
 .knopf.falsch { background: #ffe4e0; border-color: #ef8d83; border-style: dashed; }
 .knopf[aria-pressed='true'] { background: #e5edff; border-color: #5b85e8; transform: translateY(3px); box-shadow: 0 2px 0 #3b66c9; }

@@ -9,6 +9,7 @@
   const TOKEN = /^[0-9a-f]{36}$/;
 
   let kameraStopp = null;
+  let ort = 'sonst';   // 'zimmer' und 'abschluss' dürfen beim Zeitlimit noch zu Ende gebracht werden
 
   const knopf = (text, tun, klasse = '') => el('button', { type: 'button', class: 'knopf ' + klasse, onclick: tun }, text);
   const symbol = (name) => el('span', { class: 'zeichnung', style: 'display:contents', html: MH.symbol(name) });
@@ -17,6 +18,7 @@
 
   function setze(...inhalt) {
     if (kameraStopp) kameraStopp();
+    ort = 'sonst';
     MH.aufraeumenNachAufgabe();
     if (window.speechSynthesis) speechSynthesis.cancel();
     document.querySelectorAll('.konfetti').forEach((k) => k.remove());
@@ -57,6 +59,7 @@
         abzeichenKnopf(),
         ton,
         symbolKnopf('raus', sitzung.gast ? 'Anmelden' : 'Abmelden', () => {
+          MH.zeit.ende(sitzung);
           S.abmelden();
           history.replaceState(null, '', location.pathname);
           anmeldung();
@@ -85,13 +88,25 @@
 
   function anmeldung(meldung) {
     S.sitzung = null;
+    // Mit Zeitlimit gibt es kein Ausprobieren, sonst ließe es sich umgehen.
+    const regelFrisch = MH.zeit.ladeRegel();
+    const ausprobieren = knopf('Ohne Anmeldung ausprobieren', async () => {
+      ausprobieren.disabled = true;
+      const regel = await regelFrisch;
+      if (!ausprobieren.isConnected) return;
+      if (regel.limit_min) { ausprobieren.hidden = true; return; }
+      S.alsGast();
+      gehe('#/strasse');
+    }, 'leise');
+    ausprobieren.hidden = Boolean(MH.zeit.regel().limit_min);
+    regelFrisch.then((regel) => { ausprobieren.hidden = Boolean(regel.limit_min); });
     anmeldeRahmen(MIT_HAUS,
       el('h1', {}, el('span', { class: 'strassenschild' }, 'Mathestraße')),
       el('p', { class: 'unterzeile' }, 'Wer baut heute?'),
       meldung && el('p', { class: 'meldung nochmal', role: 'alert' }, meldung),
       symbolKnopf('kamera', 'QR-Code scannen', scannen, 'haupt gross'),
       symbolKnopf('pfote', 'Mit Tier und Zahl', tierWaehlen, 'gross'),
-      knopf('Ohne Anmeldung ausprobieren', () => { S.alsGast(); gehe('#/strasse'); }, 'leise'),
+      ausprobieren,
       el('a', { class: 'lehrkraft-link', href: 'lehrkraft.html' }, 'Für Lehrkräfte'));
   }
 
@@ -101,12 +116,28 @@
     netz: 'Keine Verbindung. Prüfe das WLAN und versuche es noch einmal.',
   };
 
+  function feierabend(kind = S.sitzung) {
+    MH.zeit.ende(kind);
+    S.abmelden();
+    history.replaceState(null, '', location.pathname);
+    anmeldeRahmen(MIT_HAUS,
+      el('h2', {}, 'Für heute ist Schluss'),
+      el('div', { class: 'grosses-tier' }, MH.tierBild(kind.tier)),
+      el('p', { class: 'grosser-name' }, `${kind.tier} ${kind.zahl}`),
+      el('p', {}, 'Deine Rechenzeit für heute ist um. Morgen geht es weiter!'),
+      knopf('Fertig', () => anmeldung(), 'gross'));
+  }
+  const zeitUm = () => Boolean(S.sitzung) && !S.sitzung.gast && MH.zeit.abgelaufen();
+
   async function mitToken(token) {
     anmeldeRahmen(MIT_HAUS, el('p', { role: 'status' }, 'Ich schließe dein Haus auf …'));
     const antwort = await S.anmeldenMitToken(token);
     history.replaceState(null, '', location.pathname + '#/strasse');
-    if (antwort.ok) zeigeRoute();
-    else {
+    if (antwort.ok) {
+      const kind = S.sitzung;
+      if (await MH.zeit.beginne(kind)) feierabend(kind);
+      else zeigeRoute();
+    } else {
       if (antwort.grund === 'unbekannt') S.abmelden();
       anmeldung(GRUENDE[antwort.grund]);
     }
@@ -136,7 +167,12 @@
       hinweis.textContent = 'Ich schaue nach …';
       const antwort = await S.anmeldenMitTier(tier, Number(zahl));
       if (!anzeige.isConnected) return;
-      if (antwort.ok) { gehe('#/strasse'); return; }
+      if (antwort.ok) {
+        const kind = S.sitzung;
+        if (await MH.zeit.beginne(kind)) feierabend(kind);
+        else gehe('#/strasse');
+        return;
+      }
       beschaeftigt = false;
       zahl = '';
       zeige();
@@ -318,6 +354,7 @@
 
   /* ---------- Zimmer ---------- */
   function zimmer(haus, raum) {
+    if (zeitUm()) return feierabend();
     const erst = !fertigImZimmer(haus, raum);
     const aufgaben = raum.aufgaben(erst);
     const spielfeld = el('div', { class: 'spielfeld' });
@@ -327,6 +364,7 @@
         MH.raumBild(raum),
         el('h1', {}, raum.titel)),
       spielfeld));
+    ort = 'zimmer';
     MH.raumSpielen(spielfeld, {
       raum, aufgaben,
       abschluss: (ergebnis) => ergebnisZeigen(haus, raum, ergebnis),
@@ -384,8 +422,9 @@
     }));
 
     const naechstes = naechstesZimmer(haus, raum);
-    setze(kopf(), el('main', { class: 'ergebnis', style: farben(haus) },
-      el('div', { class: 'ergebnis-karte' },
+    const kind = S.sitzung;
+    const schluss = zeitUm();
+    const karte = el('div', { class: 'ergebnis-karte' },
         el('h1', {}, 'Zimmer geschafft!'),
         el('div', { class: 'sterne gross', role: 'img', 'aria-label': `${sterne} von 3 Sternen`, html: Z.sterne(sterne) }),
         el('div', { class: 'schaubild' },
@@ -400,10 +439,20 @@
         el('h2', {}, 'So war es für mich:'),
         wahl,
         stand,
+        schluss && el('p', { class: 'botschaft' }, 'Deine Rechenzeit für heute ist um. Morgen geht es weiter!'),
         el('div', { class: 'weiterwahl' },
-          naechstes && knopf(`Weiter: ${naechstes.titel}`, () => gehe(`#/zimmer/${haus.nummer}/${naechstes.id}`), 'haupt'),
-          knopf('Ins Haus', () => gehe(`#/haus/${haus.nummer}`), naechstes ? '' : 'haupt'),
-          knopf('Noch einmal üben', () => zimmer(haus, raum))))));
+          schluss ? knopf('Fertig für heute', () => feierabend(kind), 'haupt') : [
+            naechstes && knopf(`Weiter: ${naechstes.titel}`, () => gehe(`#/zimmer/${haus.nummer}/${naechstes.id}`), 'haupt'),
+            knopf('Ins Haus', () => gehe(`#/haus/${haus.nummer}`), naechstes ? '' : 'haupt'),
+            knopf('Noch einmal üben', () => zimmer(haus, raum)),
+          ]));
+    setze(kopf(), el('main', { class: 'ergebnis', style: farben(haus) }, karte));
+    if (schluss) {
+      // Sterne ansehen und einschätzen, dann meldet sich die App von selbst ab
+      ort = 'abschluss';
+      MH.zeit.bandWeg();
+      setTimeout(() => { if (karte.isConnected) feierabend(kind); }, 20000);
+    }
     MH.ton('fertig');
     if (sterne === 3 || neueAbzeichen.length || (warNeu && (etageGeschafft || hausFertig))) MH.konfetti();
   }
@@ -441,6 +490,7 @@
       return;
     }
     if (!S.sitzung) return;
+    if (zeitUm()) return feierabend();
     const [, seite, nummer, raumId] = location.hash.split('/');
     const haus = nummer && hausNr(nummer);
     if (seite === 'abzeichen') return abzeichenAnsicht();
@@ -454,6 +504,16 @@
   }
 
   window.addEventListener('hashchange', zeigeRoute);
+
+  MH.zeit.starte({
+    wo: () => ort,
+    schluss: feierabend,
+    gastSchluss: () => {
+      S.abmelden();
+      history.replaceState(null, '', location.pathname);
+      anmeldung('Bitte melde dich mit deiner Karte oder deinem Tier an.');
+    },
+  });
 
   // Geteilte Geräte: Nach 15 Minuten ohne Berührung wird gefragt, wer jetzt da ist.
   const PAUSE = 15 * 60 * 1000;

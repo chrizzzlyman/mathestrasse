@@ -32,6 +32,8 @@
     }
   }
 
+  S.rpc = rpc;
+
   const besser = (stand, haus, raum, sterne) => {
     const k = schluessel(haus, raum);
     stand[k] = Math.max(stand[k] || 0, sterne);
